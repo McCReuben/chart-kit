@@ -105,3 +105,4 @@ export * from './charts/WaterfallChart';
 export * from './charts/DualAxisChart';
 export * from './charts/LineChart';
 export * from './charts/ComboBarLineChart';
+export * from './charts/BarChart';
