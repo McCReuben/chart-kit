@@ -62,7 +62,7 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 | ComboBarLineChart | subagent `combo`   | [x]    |
 | DualAxisChart     | subagent `dual`    | [x]    |
 | WaterfallChart    | subagent `water`   | [x]    |
-| ChartSegment      | subagent `segment` | [ ]    |
+| ChartSegment      | subagent `segment` | [~]    |
 
 Shared brief for 3b: every chart agent got the same rules, file ownership, conventions, verification and
 report format, plus a chart-specific feature list. Each builds Storybook into its own `storybook-static-<slug>/`
@@ -143,7 +143,7 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
   call. Together with `width:'auto'` and `PlotAreaProbe`, this loops forever. BarChart memoises locally; fix it in core.
 - Core requests: a `symbolGap` option on `ChartLegend`, and a positioner option on `tooltipProps`.
 
-### Core follow-ups requested by chart agents (for a core pass after 3b)
+### Core follow-ups requested by chart agents (core pass in progress, subagent `core-2`)
 - `SharedTooltipContent`: `skipNull` option (LineChart).
 - `tooltipProps`: `crosshair` override option (LineChart).
 - `valueAxisProps`: `titleFontSize`, or a default around 13px to match Highcharts (DualAxis, LineChart).
