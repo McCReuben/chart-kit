@@ -7,7 +7,7 @@ index.json, and captures each story with `globals=theme:light` and
 Highcharts trial/licence messages are listed separately from real errors.
 
 Usage:
-    python3 scripts/screenshot.py [--run NAME] [--filter SUBSTR ...] [--width 1100]
+    python3 scripts/screenshot.py [--run NAME] [--filter SUBSTR ...] [--width 1100] [--static DIR]
 
 Output: screenshots/<run>/<story-id>--<theme>.png plus report.json.
 Exits 1 if any story has real (non-licence) errors.
@@ -40,8 +40,8 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def serve():
-    handler = functools.partial(QuietHandler, directory=str(STATIC))
+def serve(static):
+    handler = functools.partial(QuietHandler, directory=str(static))
     httpd = socketserver.ThreadingTCPServer(('127.0.0.1', 0), handler)
     httpd.daemon_threads = True
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
@@ -53,11 +53,13 @@ def main():
     ap.add_argument('--run', default=datetime.now().strftime('%Y%m%d-%H%M%S'))
     ap.add_argument('--filter', nargs='*', default=[], help='only story ids containing one of these substrings')
     ap.add_argument('--width', type=int, default=1100)
+    ap.add_argument('--static', default=str(STATIC), help='built Storybook dir (default storybook-static)')
     args = ap.parse_args()
+    static = Path(args.static).resolve()
 
-    index_path = STATIC / 'index.json'
+    index_path = static / 'index.json'
     if not index_path.exists():
-        sys.exit('storybook-static/index.json not found; run `npm run build-storybook` first')
+        sys.exit(f'{index_path} not found; run `npm run build-storybook` first')
     entries = json.loads(index_path.read_text())['entries'].values()
     stories = sorted(e['id'] for e in entries if e.get('type') == 'story')
     if args.filter:
@@ -65,7 +67,7 @@ def main():
 
     out = ROOT / 'screenshots' / args.run
     out.mkdir(parents=True, exist_ok=True)
-    httpd, port = serve()
+    httpd, port = serve(static)
     report = []
 
     with sync_playwright() as pw:
