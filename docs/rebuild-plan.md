@@ -57,12 +57,16 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 
 | Task              | Owner              | Status |
 | ----------------- | ------------------ | ------ |
-| LineChart         | subagent `line`    | [ ]    |
-| BarChart          | subagent `bar`     | [ ]    |
-| ComboBarLineChart | subagent `combo`   | [ ]    |
-| DualAxisChart     | subagent `dual`    | [ ]    |
-| WaterfallChart    | subagent `water`   | [ ]    |
+| LineChart         | subagent `line`    | [~]    |
+| BarChart          | subagent `bar`     | [~]    |
+| ComboBarLineChart | subagent `combo`   | [~]    |
+| DualAxisChart     | subagent `dual`    | [~]    |
+| WaterfallChart    | subagent `water`   | [~]    |
 | ChartSegment      | subagent `segment` | [ ]    |
+
+Shared brief for 3b: every chart agent got the same rules, file ownership, conventions, verification and
+report format, plus a chart-specific feature list. Each builds Storybook into its own `storybook-static-<slug>/`
+(`screenshot.py --static`), so parallel builds don't clash.
 
 ## Phase 4: new components (all confirmed in scope, see D2)
 
