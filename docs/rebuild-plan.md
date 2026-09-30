@@ -59,7 +59,7 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 | ----------------- | ------------------ | ------ |
 | LineChart         | subagent `line`    | [x]    |
 | BarChart          | subagent `bar`     | [~]    |
-| ComboBarLineChart | subagent `combo`   | [~]    |
+| ComboBarLineChart | subagent `combo`   | [x]    |
 | DualAxisChart     | subagent `dual`    | [x]    |
 | WaterfallChart    | subagent `water`   | [x]    |
 | ChartSegment      | subagent `segment` | [ ]    |
@@ -114,6 +114,16 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
   - The y title is 11px against Highcharts' larger one.
   - The dashed legend symbol is shorter.
 - Open: `xAxisCrosshair: true` gives a dotted line; Highcharts gives a band on category axes.
+
+### ComboBarLineChart (see git log)
+- Same props. `tooltipValueFormatter(v, series)` now also receives null, so formatters must handle it.
+  `weekYear` removed. New: `tooltipHeaderFormatter`, `defaultTooltipIndex` (renamed from the agent's
+  `tooltipDefaultIndex` for consistency), common props.
+- Dimming follows the original, not the skeleton: plot hover dims nothing, and legend hover fades only the splines
+  to 0.2 (columns stay at 1). Hovered columns brighten by 0.1 through a local `brighten` helper.
+- Differences: rotated labels sit slightly closer to the axis (core `CategoryTick`), and the monotone curve differs
+  slightly from Highcharts' spline.
+- Core requests: dim only some series in `useSeriesHover`, and a shared `brighten` colour helper.
 
 ### Core follow-ups requested by chart agents (for a core pass after 3b)
 - `SharedTooltipContent`: `skipNull` option (LineChart).
