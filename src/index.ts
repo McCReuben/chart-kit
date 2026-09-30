@@ -106,3 +106,6 @@ export * from './charts/DualAxisChart';
 export * from './charts/LineChart';
 export * from './charts/ComboBarLineChart';
 export * from './charts/BarChart';
+
+// Spec renderer
+export * from './spec/ChartSegment';
