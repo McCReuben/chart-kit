@@ -1,0 +1,11 @@
+/* Hover highlight for LineChart.
+ *
+ * `highcharts-series-hover` is added by Highcharts to the hovered series, and
+ * LineChart flags the container while a series is hovered. Dimming through CSS
+ * keeps the highlight free: no series.update(), no redraw, and no fight with the
+ * inactive states the shared tooltip applies on every pointer move. */
+.highcharts-container.line-chart--hovered .highcharts-series:not(.highcharts-series-hover),
+.highcharts-container.line-chart--hovered .highcharts-markers:not(.highcharts-series-hover) {
+    opacity: 0.4;
+    transition: opacity 120ms ease-out;
+}
