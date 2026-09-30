@@ -9,7 +9,7 @@ export default defineConfig({
     plugins: [react()],
     build: {
         lib: {
-            entry: 'src/index.js',
+            entry: 'src/index.ts',
             formats: ['es'],
             fileName: 'chart-kit',
             cssFileName: 'chart-kit',

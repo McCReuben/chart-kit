@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Fails if the library can reach Highcharts or the frozen originals.
-//  1. Walks the import graph from src/index.js and rejects any `highcharts*`
+//  1. Walks the import graph from src/index.ts and rejects any `highcharts*`
 //     import and any file under src/originals/.
 //  2. Scans dist/ (run `npm run build` first) for the string "highcharts".
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const ENTRY = join(root, 'src/index.js');
+const ENTRY = join(root, 'src/index.ts');
 const ORIGINALS = join(root, 'src/originals') + '/';
 const EXTS = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '/index.ts', '/index.tsx', '/index.js', '/index.jsx'];
 const SPEC_RE = /(?:import|export)\s[^'"`]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|require\(\s*['"]([^'"]+)['"]\s*\)/g;
@@ -61,4 +61,4 @@ if (problems.length) {
     console.error('check:no-highcharts FAILED\n' + problems.map((p) => `  - ${p}`).join('\n'));
     process.exit(1);
 }
-console.log(`check:no-highcharts OK (${seen.size} source files reachable from src/index.js, dist/ clean)`);
+console.log(`check:no-highcharts OK (${seen.size} source files reachable from src/index.ts, dist/ clean)`);
