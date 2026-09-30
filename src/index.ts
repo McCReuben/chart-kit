@@ -99,3 +99,6 @@ export type {
     XZoom,
     XZoomOptions,
 } from './core';
+
+// Charts
+export * from './charts/WaterfallChart';
