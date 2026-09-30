@@ -2,7 +2,7 @@
     "name": "chart-kit",
     "version": "0.0.0",
     "private": true,
-    "description": "Reusable, theme-aware React chart components (Highcharts + Recharts).",
+    "description": "Reusable, theme-aware React chart components built on Recharts.",
     "type": "module",
     "files": [
         "dist"
@@ -10,7 +10,10 @@
     "main": "./dist/chart-kit.js",
     "module": "./dist/chart-kit.js",
     "exports": {
-        ".": "./dist/chart-kit.js",
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "import": "./dist/chart-kit.js"
+        },
         "./style.css": "./dist/chart-kit.css"
     },
     "sideEffects": [
@@ -20,14 +23,16 @@
         "node": ">=20.19"
     },
     "scripts": {
-        "build": "vite build",
+        "build": "vite build && tsc -p tsconfig.build.json",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "format": "prettier --write \"**/*.{js,jsx,json,css,md}\""
+        "format": "prettier --write \"**/*.{js,jsx,json,css,md}\"",
+        "check:no-highcharts": "node scripts/check-no-highcharts.mjs",
+        "screenshots": "python3 scripts/screenshot.py",
+        "typecheck": "tsc -p tsconfig.json",
+        "verify": "npm run typecheck && npm run build && npm run check:no-highcharts && npm run build-storybook"
     },
     "peerDependencies": {
-        "highcharts": "^12.6.0",
-        "highcharts-react-official": "^3.2.3",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
         "recharts": "^3.3.0"
@@ -36,6 +41,8 @@
         "@storybook/addon-docs": "^10.6.1",
         "@storybook/react-vite": "^10.6.1",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^5.2.0",
         "highcharts": "^12.6.2",
         "highcharts-react-official": "^3.2.3",
@@ -44,6 +51,8 @@
         "react-dom": "^19.3.0",
         "recharts": "^3.10.1",
         "storybook": "^10.6.1",
+        "typescript": "^5.9.3",
         "vite": "^7.3.6"
-    }
+    },
+    "types": "./dist/types/index.d.ts"
 }
