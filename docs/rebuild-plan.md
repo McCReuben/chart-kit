@@ -14,7 +14,7 @@ Branch: `rebuild`. Node 22: prefix commands with `PATH=~/.nvm/versions/node/v22.
 ```sh
 npm run typecheck
 npm run build                 # vite lib build + d.ts (dist/types)
-npm run check:no-highcharts   # import graph from src/index.js + grep of dist/
+npm run check:no-highcharts   # import graph from src/index.ts + grep of dist/
 npm run build-storybook
 python3 scripts/screenshot.py --run <NN-name> [--filter <story-id-substr> ...]
 ```
@@ -42,13 +42,16 @@ accessibility-module advisory).
 
 ## Phase 3a: core foundation (owner: subagent `core`)
 
-- [~] `src/theme/`: `ChartThemeProvider`, `useChartTheme`, light/dark defaults, overrides, follow page scheme
-- [ ] `src/core/`: axis props, tooltip frame + markers, legend, crosshair cursor, drag-to-zoom + reset button,
+- [x] `src/theme/`: `ChartThemeProvider`, `useChartTheme`, light/dark defaults, overrides, follow page scheme
+- [x] `src/core/`: axis props, tooltip frame + markers, legend, crosshair cursor, drag-to-zoom + reset button,
       hover dimming
-- [ ] `src/core/formatters.ts`: opt-in retail-week formatter + number/currency/percent formatters
-- [ ] Stable-props hook (content-keyed data, formatter refs)
-- [ ] Final core API recorded below under "Core API"
-- [ ] Storybook preview wired to the new theme (facilitator)
+- [x] `src/core/formatters.ts`: opt-in retail-week formatter + number/currency/percent formatters
+- [x] Stable-props hook (content-keyed data, formatter refs)
+- [x] Final core API recorded below under "Core API"
+- [x] Storybook preview wired to the new theme (facilitator)
+
+The first core subagent was stopped at about 300k tokens with the code written but no report. A second, narrowly
+scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wrote the API report.
 
 ## Phase 3b: rebuilds (one subagent each, parallel after 3a)
 
@@ -97,7 +100,7 @@ accessibility-module advisory).
   instance with `useId()` where it has to be (SVG pattern/clip ids).
 - No client identifiers: no client names, no GMB/GMV or other client metric names, no "Market Sans", no copied data.
   Fixtures are invented and live in `src/charts/fixtures.js` (facilitator-owned).
-- Shared files are owned by the facilitator: `src/index.js`, `src/charts/fixtures.js`, `package.json`,
+- Shared files are owned by the facilitator: `src/index.ts`, `src/charts/fixtures.js`, `package.json`,
   `.storybook/*`, `scripts/*`, `tsconfig*.json`, `vite.config.js`, this file. Subagents request changes in their
   report.
 
@@ -136,7 +139,144 @@ interface CommonChartProps<S extends SeriesInput = SeriesInput> {
 
 ## Core API
 
-_To be filled in from the core subagent's report._
+Import from `../../core` and `../../theme` inside `src/charts/<Name>/`. Every export has JSDoc in the source.
+Read the source for full option lists; this section is the contract.
+
+### Theme (`src/theme`)
+- `ChartThemeProvider({ mode?: 'light'|'dark'|'system', theme?: ChartThemeOverrides, children })`: nested providers
+  inherit the mode and deep-merge overrides. 'system' follows `prefers-color-scheme` live and is SSR-safe.
+- `useChartTheme(overrides?)`: context theme (or `lightTheme` with no provider) with per-instance overrides merged
+  in. Memoised by content, so an inline object is fine. **Every chart calls this with its `theme` prop.**
+- `lightTheme`, `darkTheme`, `LIGHT_PALETTE`, `DARK_PALETTE`, `getBaseTheme(mode)`, `mergeTheme(base, ...o)`.
+- `ChartTheme` tokens: `mode`, `isDarkMode`, `background`, `componentBackground`, `componentBorder`, `surface`,
+  `border`, `text.{primary,secondary}`, `axisLabel`, `gridLine`, `crosshair`, `selectionFill`, `inactiveLegend`,
+  `positive`, `negative`, `forecast`, `budget`, `accent`, `fontFamily`, `fontSize.{axis,legend,tooltip,dataLabel}`,
+  `tooltipInverse.*` and `palette`.
+
+### Layout and axes
+Axes ship as **prop factories** spread onto Recharts' own `<XAxis>`/`<YAxis>`/`<CartesianGrid>`. This is a
+choice, not a constraint: Recharts 3 does allow wrapping `<XAxis>`. Factories keep the real element, so callers
+can override any prop.
+- `ChartFrame({ height, theme?, backgroundColor?, ariaLabel?, className?, style?, legend?, overlay?, children })`:
+  the container. It wraps the chart in a ResponsiveContainer and applies `CHART_SPACING`, `position: relative`,
+  `role="img"` and `aria-label`. `'transparent'` is a valid background.
+- `CHART_MARGIN`: the default `margin` for the Recharts chart.
+- `categoryAxisProps(theme, { position?, dataKey?='index', categories, labelFormatter?(cat,i), rotateLabels?,
+  title?, activeValue?, interval?, hide?, axisId?, height? })`: band scale. `rotateLabels` gives −45° labels
+  anchored at the end.
+- `valueAxisProps(theme, { position?: 'left'|'right'|'bottom', formatter?(v), title?, scale?: NiceScale, hide?,
+  axisId?, width? })`.
+- `gridProps(theme, { direction? })`: grid lines along the value axis only.
+- `CategoryTick` and `ActiveCategoryTick` (accent dot plus bold accent label for `activeValue`), `ROTATED_LABEL_ANGLE`,
+  `estimateCategoryAxisHeight(labels, opts)`.
+- `niceScale(min, max, { pixelLength?, tickPixelInterval?=72, tickCount?, includeZero? })` returns
+  `{ min, max, ticks, interval, domain }` (Highcharts-like ticks).
+- `PlotAreaProbe({ onChange })` reports the plot size from inside a chart (feed its height to `niceScale`).
+- `HatchPattern({ id, color, background?, tintOpacity?, spacing?, strokeWidth?, angle? })` goes in `<defs>`.
+
+### Tooltip parts
+- `tooltipProps(theme, { crosshair?=true, layout? })`: spread onto `<Tooltip>`. No animation, dotted crosshair,
+  offset 14.
+- `SharedTooltipContent({ series: TooltipSeriesItem[], rows?, headerFormatter?, valueFormatter?(v, series),
+  variant? })`: pass it as `content={<SharedTooltipContent/>}`. `rows` must be the rows actually rendered (the
+  zoomed slice). Hidden series are skipped and null values show `—`.
+- `TooltipFrame({ variant?: 'default'|'inverse' })`, `TooltipTitle`, `TooltipRow({ marker?, label?, value? })`,
+  `TooltipMarker({ kind: 'square'|'circle'|'line'|'dashed'|'hatch', color })`: Title, Row and Marker follow the
+  frame's variant through context.
+- `CrosshairCursor({ color?, lineWidth?, dashArray?, layout? })` (`tooltipProps` already adds it).
+
+### Legend
+- `ChartLegend({ items: LegendItem[], onToggle?(key), onItemClick?(item), onItemHover?(key|null), symbolSize?=10,
+  symbolRadius?=0 })`: `onItemClick` replaces toggling. Hidden items are drawn in `inactiveLegend`. Pass it
+  through ChartFrame's `legend` prop.
+- `LegendSymbol({ kind: 'square'|'circle'|'line'|'dashed'|'lineMarker'|'hatch', ... })`.
+- `useSeriesVisibility(ids, resetKey?)` returns `{ hidden, isHidden, toggle, setVisible, showAll }`.
+
+### Interactions
+- `useSeriesHover({ dimOpacity?=0.4 })` returns `{ hovered, setHovered, clear, isDimmed, opacityOf, dimProps(id),
+  bindItem(id) }`. `DIM_OPACITY` is 0.4 and `DIM_TRANSITION` is `opacity 120ms ease-out`.
+- `NearestSeriesTracker({ series, onChange, layout? })`: render it **inside** line-type charts to pick the series
+  nearest the pointer. Bars use `hover.bindItem(key)` instead.
+- `useXZoom({ length, resetKey?, enabled?, minDragPx?=10 })` returns `{ range, isZoomed, sliceRows(rows),
+  selection, chartHandlers, reset, consumeDragClick() }`.
+- `ZoomSelection({ selection })` and `ResetZoomButton({ visible, onClick, fill? })` are both rendered **inside**
+  the chart.
+
+### Data helpers
+- `buildRows(categories, series)` returns `{ index, category, s0, s1, … }`. Non-finite values become null.
+- `resolveSeries(series, palette)` returns `{ key: 's<i>', name, color, index, input }`.
+- `seriesExtent(rows, keys, { stacked? })`, `seriesKey(i)`, `paletteColor(palette, i)`.
+- Types: `SeriesInput { name, data: (number|null)[], color? }`, `ChartRow`, `ResolvedSeries`.
+
+### Formatters
+- `formatNumber`, `formatCurrency` and `formatPercent` take `(v, { locale, decimals, compact, signDisplay, prefix,
+  suffix, currency?, fromRatio? })`. Factory versions: `numberFormatter`, `currencyFormatter`, `percentFormatter`.
+- `formatRetailWeek(value, year?)` and `retailWeekFormatter(year?)` (opt-in; see D10).
+- `defaultValueFormatter` and `defaultCategoryFormatter` (`String`), `EMPTY_VALUE = '—'`.
+
+### Hooks
+- `useContentStable(value)`: keeps the previous reference while the content is JSON-equal.
+- `useLatestRef(value)`, `useStableCallback(fn)`: stable identity that always calls the latest function.
+- `useUniqueId(prefix?)` returns `ck-<prefix>-…`, safe to use in `url(#…)`.
+
+### Recharts constraints to know
+- Axis heights are estimated (`estimateCategoryAxisHeight`), not `"auto"`, because auto can oscillate with tick
+  thinning.
+- `NearestSeriesTracker`, `ZoomSelection` and `ResetZoomButton` use Recharts hooks, so they must be children of the
+  chart.
+- To keep point clicks working under zoom, guard handlers with `if (zoom.consumeDragClick()) return;`.
+
+### Chart skeleton (contract)
+```tsx
+export function ExampleLineChart({ series, categories, height = 360, backgroundColor, theme: overrides,
+    xAxisLabelFormatter, valueFormatter }: ExampleLineChartProps) {
+    const theme = useChartTheme(overrides);
+    const stableSeries = useContentStable(series);                  // equal content -> same reference
+    const stableCats = useContentStable(categories);
+    const resolved = useMemo(() => resolveSeries(stableSeries, theme.palette), [stableSeries, theme.palette]);
+    const allRows = useMemo(() => buildRows(stableCats, stableSeries), [stableCats, stableSeries]);
+    const fmtLabel = useStableCallback((v: string | number, i: number) => (xAxisLabelFormatter ?? defaultCategoryFormatter)(v, i));
+    const fmtValue = useStableCallback((v: number | null) => (valueFormatter ?? defaultValueFormatter)(v));
+
+    const visibility = useSeriesVisibility(resolved.map((s) => s.key), resolved.map((s) => s.name));
+    const hover = useSeriesHover();
+    const zoom = useXZoom({ length: allRows.length, resetKey: allRows });   // auto-resets on data change
+    const rows = useMemo(() => zoom.sliceRows(allRows), [zoom.sliceRows, allRows]);
+    const extent = seriesExtent(rows, resolved.filter((s) => !visibility.isHidden(s.key)).map((s) => s.key));
+    const scale = extent ? niceScale(extent[0], extent[1], { pixelLength: height * 0.6 }) : undefined;
+    const items = resolved.map((s) => ({ key: s.key, name: s.name, color: s.color, hidden: visibility.isHidden(s.key) }));
+
+    return (
+        <ChartFrame height={height} theme={theme} backgroundColor={backgroundColor} ariaLabel="Line chart"
+            legend={<ChartLegend items={items.map((i) => ({ ...i, symbol: 'line' as const }))}
+                onToggle={visibility.toggle} onItemHover={hover.setHovered} />}>
+            <LineChart data={rows} margin={CHART_MARGIN} {...zoom.chartHandlers} onMouseLeave={hover.clear}
+                style={{ userSelect: 'none' }}>
+                <CartesianGrid {...gridProps(theme)} />
+                <XAxis {...categoryAxisProps(theme, { categories: stableCats, labelFormatter: fmtLabel, rotateLabels: true })} />
+                <YAxis {...valueAxisProps(theme, { scale, formatter: fmtValue })} />
+                <Tooltip {...tooltipProps(theme)} content={<SharedTooltipContent rows={rows}
+                    series={items.map((i) => ({ ...i, marker: 'square' as const }))}
+                    headerFormatter={fmtLabel} valueFormatter={fmtValue} />} />
+                {resolved.map((s) => (
+                    <Line key={s.key} dataKey={s.key} name={s.name} stroke={s.color} strokeWidth={2.5} dot={false}
+                        hide={visibility.isHidden(s.key)} isAnimationActive={false} {...hover.dimProps(s.key)} />
+                ))}
+                <NearestSeriesTracker series={items} onChange={hover.setHovered} />
+                <ZoomSelection selection={zoom.selection} />
+                <ResetZoomButton visible={zoom.isZoomed} onClick={zoom.reset} fill={backgroundColor} />
+            </LineChart>
+        </ChartFrame>
+    );
+}
+```
+Other chart types:
+- **Bars:** add `{...hover.bindItem(s.key)}` and leave out `NearestSeriesTracker`.
+- **Horizontal bars:** `layout="vertical"`, `categoryAxisProps(theme, { position: 'left' })`,
+  `valueAxisProps(theme, { position: 'bottom' })`, `gridProps(theme, { direction: 'vertical' })`,
+  `tooltipProps(theme, { layout: 'vertical' })`.
+- **Hatched bars:** `const id = useUniqueId('hatch')`, `<defs><HatchPattern id={id} color={c} /></defs>`,
+  `fill={`url(#${id})`}`.
 
 ---
 
@@ -149,9 +289,12 @@ _To be filled in from the core subagent's report._
 | D3  | 2026-09-30 | Fidelity: **same features + same design** (colours, spacing, font sizes, axis/tooltip/legend style, interactions); no pixel-for-pixel match; every difference listed with a reason.                        | User |
 | D4  | 2026-09-30 | Default theme keeps the **source app's colour tokens** (light and dark). Default series palette is a new generic one.                                                                                      | User |
 | D5  | 2026-09-30 | Package name stays **`chart-kit`**.                                                                                                                                                                        | User |
-| D6  | 2026-09-30 | Library entry stays `src/index.js` (re-exports .ts/.tsx). Types are emitted by `tsc -p tsconfig.build.json` into `dist/types`, so there's no extra Vite plugin dependency.                                 | Facilitator |
+| D6  | 2026-09-30 | ~~Library entry stays `src/index.js`~~ (superseded by D9). Types are emitted by `tsc -p tsconfig.build.json` into `dist/types`, so there's no extra Vite plugin dependency.                                 | Facilitator |
 | D7  | 2026-09-30 | `tooltipHeaderFormatter`, `className` and `ariaLabel` join the common props. `weekYear` is replaced by the opt-in `retailWeekFormatter(year)`.                                                             | Facilitator |
 | D8  | 2026-09-30 | Originals' stories keep the old fixture `PALETTE` (so the baseline stays valid). New and comparison stories use generic, non-client colours.                                                               | Facilitator |
+| D9  | 2026-09-30 | Library entry is now **`src/index.ts`**, so it can re-export types (`SeriesInput`, `ChartTheme`, …). Plain JS can't. Types are still emitted by tsc into `dist/types`. | Facilitator |
+| D10 | 2026-09-30 | `formatRetailWeek` treats a null or empty year as "no year" (`'W5'` → `'RW05'`). The original gave `'0 RW05'`, since `Number(null)` is 0. Output is identical whenever a real year is given. | Facilitator |
+| D11 | 2026-09-30 | Axes ship as prop factories by choice. Recharts 3 does allow wrapping `<XAxis>`, but factories keep the real element and its full prop surface. | Facilitator |
 
 ## Notes and observations
 
