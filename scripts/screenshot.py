@@ -53,6 +53,8 @@ def main():
     ap.add_argument('--run', default=datetime.now().strftime('%Y%m%d-%H%M%S'))
     ap.add_argument('--filter', nargs='*', default=[], help='only story ids containing one of these substrings')
     ap.add_argument('--width', type=int, default=1100)
+    # Tall default: Chromium drops clip-path content in full_page shots below the fold.
+    ap.add_argument('--height', type=int, default=1400)
     ap.add_argument('--static', default=str(STATIC), help='built Storybook dir (default storybook-static)')
     args = ap.parse_args()
     static = Path(args.static).resolve()
@@ -74,7 +76,7 @@ def main():
         browser = pw.chromium.launch()
         for story in stories:
             for theme in THEMES:
-                page = browser.new_page(viewport={'width': args.width, 'height': 700})
+                page = browser.new_page(viewport={'width': args.width, 'height': args.height})
                 errors, licence = [], []
 
                 def on_console(msg, errors=errors, licence=licence):
