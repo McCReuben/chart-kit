@@ -58,7 +58,7 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 | Task              | Owner              | Status |
 | ----------------- | ------------------ | ------ |
 | LineChart         | subagent `line`    | [x]    |
-| BarChart          | subagent `bar`     | [~]    |
+| BarChart          | subagent `bar`     | [x]    |
 | ComboBarLineChart | subagent `combo`   | [x]    |
 | DualAxisChart     | subagent `dual`    | [x]    |
 | WaterfallChart    | subagent `water`   | [x]    |
@@ -125,6 +125,24 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
   slightly from Highcharts' spline.
 - Core requests: dim only some series in `useSeriesHover`, and a shared `brighten` colour helper.
 
+### BarChart (see git log)
+- Changes:
+  - `tooltipHtmlFormatter(this)` → `renderTooltip(context)`, which returns a ReactNode (migration notes in the JSDoc).
+  - `onPointClick(name, point)`: the point is now a plain `BarPointClick`, so `.y` → `.value`.
+  - `legendSymbolPadding` removed (the core legend's fixed 5px gap equals the old default).
+  - `marginBottom` removed (the layout is computed).
+  - `weekYear` removed.
+- New: `xAxisLabelFormatter`, `tooltipHeaderFormatter`, `rotateXAxisLabels` (default auto: no rotation for `2026 Q1`
+  categories), `defaultTooltipIndex`, common props.
+- The away-from-cursor positioner is ported exactly and unit-tested.
+- Not done: Highcharts' hiding of overlapping labels outside stacks (Recharts has no collision detection).
+- Differences:
+  - Tick counts can differ, because the plot is about 20px taller (core axis and legend heights).
+  - Stack totals have float noise removed.
+- Core bug: `categoryAxisProps(theme, {position:'left'})` returns new `tick`/`tickFormatter` identities on every
+  call. Together with `width:'auto'` and `PlotAreaProbe`, this loops forever. BarChart memoises locally; fix it in core.
+- Core requests: a `symbolGap` option on `ChartLegend`, and a positioner option on `tooltipProps`.
+
 ### Core follow-ups requested by chart agents (for a core pass after 3b)
 - `SharedTooltipContent`: `skipNull` option (LineChart).
 - `tooltipProps`: `crosshair` override option (LineChart).
@@ -132,6 +150,7 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
 - `categoryAxisProps`: no tick marks, to match the originals (LineChart).
 - Legend: a dot-only or 12px `lineMarker` symbol (DualAxis).
 - Move `alignedScales` from DualAxisChart into core if other charts get two axes.
+- Fix the `categoryAxisProps` identity loop (BarChart). Add `ChartLegend` `symbolGap` and a `tooltipProps` positioner.
 - `defaultTooltipIndex` is the agreed name for static-tooltip props across charts.
 - A theme token for waterfall totals or neutral bars (Waterfall).
 
