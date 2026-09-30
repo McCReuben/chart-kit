@@ -62,7 +62,7 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 | ComboBarLineChart | subagent `combo`   | [x]    |
 | DualAxisChart     | subagent `dual`    | [x]    |
 | WaterfallChart    | subagent `water`   | [x]    |
-| ChartSegment      | subagent `segment` | [~]    |
+| ChartSegment      | subagent `segment` | [x]    |
 
 Shared brief for 3b: every chart agent got the same rules, file ownership, conventions, verification and
 report format, plus a chart-specific feature list. Each builds Storybook into its own `storybook-static-<slug>/`
@@ -143,6 +143,21 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
   call. Together with `width:'auto'` and `PlotAreaProbe`, this loops forever. BarChart memoises locally; fix it in core.
 - Core requests: a `symbolGap` option on `ChartLegend`, and a positioner option on `tooltipProps`.
 
+### ChartSegment (`src/spec/ChartSegment/`)
+- Changes:
+  - `spec` is typed (`ChartSpec`).
+  - The default export becomes the named export `ChartSegment`.
+  - `hasChartSegment` is kept.
+  - `DEFAULT_PALETTE` is removed (client brand colours), so uncoloured series use the theme palette.
+  - `ChartSegment.css` classes are replaced by inline theme styles.
+- New: `theme`, `className`, `style` (the escape hatch for the old `:first-child`/`:last-child` margins),
+  `ariaLabel`, `planChartSegment`, `cardBorderColor`.
+- Differences:
+  - Numeric strings in data become numbers.
+  - `yLabel`/`xLabel` also reach Line and Bar axis titles.
+  - `xLabel` is ignored by Bar and DualAxis (they have no x title prop).
+- Candidate token: `cardBorder` (light `rgba(9,104,246,0.08)`, dark `rgba(255,255,255,0.12)`).
+
 ### Core follow-ups requested by chart agents (core pass in progress, subagent `core-2`)
 - `SharedTooltipContent`: `skipNull` option (LineChart).
 - `tooltipProps`: `crosshair` override option (LineChart).
@@ -184,7 +199,7 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
 - **Recharts only.** Never import `highcharts*` or anything in `src/originals/` from library code. (Stories under
   `Comparison/*` may import originals; stories are not part of the library.)
 - TypeScript (`.tsx`/`.ts`). Every public prop gets a JSDoc comment, because Storybook's docs read them.
-- File layout per chart: `src/charts/<Name>/<Name>.tsx`, `index.ts`, `<Name>.stories.tsx` (title `Charts/<Name>`),
+- File layout per chart: `src/charts/<Name>/<Name>.tsx` (the spec renderer lives in `src/spec/ChartSegment/`), `index.ts`, `<Name>.stories.tsx` (title `Charts/<Name>`),
   `<Name>.comparison.stories.tsx` (title `Comparison/<Name>`, only where an original exists).
 - No global CSS class names. Prefer inline styles. Any class or id must be prefixed `ck-` and made unique per
   instance with `useId()` where it has to be (SVG pattern/clip ids).
