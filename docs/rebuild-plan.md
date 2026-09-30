@@ -57,16 +57,73 @@ scoped subagent audited it, filled in JSDoc gaps, fixed a story formatter and wr
 
 | Task              | Owner              | Status |
 | ----------------- | ------------------ | ------ |
-| LineChart         | subagent `line`    | [~]    |
+| LineChart         | subagent `line`    | [x]    |
 | BarChart          | subagent `bar`     | [~]    |
 | ComboBarLineChart | subagent `combo`   | [~]    |
-| DualAxisChart     | subagent `dual`    | [~]    |
-| WaterfallChart    | subagent `water`   | [~]    |
+| DualAxisChart     | subagent `dual`    | [x]    |
+| WaterfallChart    | subagent `water`   | [x]    |
 | ChartSegment      | subagent `segment` | [ ]    |
 
 Shared brief for 3b: every chart agent got the same rules, file ownership, conventions, verification and
 report format, plus a chart-specific feature list. Each builds Storybook into its own `storybook-static-<slug>/`
 (`screenshot.py --static`), so parallel builds don't clash.
+
+## Phase 3b results (summaries of the verified reports; details are in the commit messages)
+
+### WaterfallChart (b9c03bd)
+- Renames: `chartData` → `data`; `TooltipContent` component → `renderTooltip(row, index)`. `renderBarLabel` gets
+  `{x, y, width, height, index, row, color, theme}`, and `renderXTick` gets the Recharts tick props plus `row` and `theme`.
+- New: `toWaterfallRows(start, steps, end, options?)`, `resolveWaterfallColor`, `totalColor`,
+  `xAxisLabelFormatter`, `tooltipValueFormatter`, `tooltipHeaderFormatter`, `defaultTooltipIndex`, common props.
+  The row `kind` ('total'|'increase'|'decrease') selects the theme colours.
+- Differences:
+  - Theme font instead of the serif fallback. Nice y ticks instead of odd padded ones.
+  - The default tooltip shows the signed value; the original showed the unsigned delta.
+  - Totals use `palette[0]`.
+  - The dark `positive` token (source app green, D4) reads as olive.
+- Not applicable: `series`/`categories` (the chart takes rows), `showLegend` (the original has no legend).
+
+### DualAxisChart (8ce66b7)
+- Renames:
+  - `axis: 'left'|'right'` (0/1 still accepted).
+  - `type: 'spline'|'column'` (`seriesType` is a deprecated alias; 'line'/'bar' also accepted).
+  - `tooltipValueFormatter(value, series)`: old single-argument functions still work.
+  - `weekYear` removed.
+- New: `y2AxisFormatter`, `defaultTooltipIndex`, common props.
+- Reproduces Highcharts aligned ticks across both axes (`alignTicks.ts`), with a nice scale per axis from its
+  visible series.
+- Differences:
+  - Dimming is 0.4 (library standard); the original was about 0.2.
+  - The solid-spline legend symbol is `lineMarker` (16px line with a dot); the original shows a dot only.
+  - No brightness change on column hover.
+  - Axis titles are overridden locally to 13px.
+
+### LineChart (d3674c4)
+- Renames:
+  - `sparkPoint` → `hoverTrail`.
+  - `xAxisCrosshair` takes `boolean | {color, width, dashStyle}`.
+  - `weekYear` removed.
+  - `immutable` removed (no chart instance to update or recreate in Recharts).
+- New: `zoomable` (default true), `initialZoom`, `defaultTooltipIndex`, per-series `lineWidth`/`markerRadius`/`dashStyle`
+  (all 11 Highcharts dash names).
+- The tooltip leaves out null points, as Highcharts does. It uses local content because `SharedTooltipContent`
+  shows `—`.
+- Differences:
+  - The x-axis band is slightly shorter.
+  - Small x tick marks are drawn (the original has none).
+  - The y title is 11px against Highcharts' larger one.
+  - The dashed legend symbol is shorter.
+- Open: `xAxisCrosshair: true` gives a dotted line; Highcharts gives a band on category axes.
+
+### Core follow-ups requested by chart agents (for a core pass after 3b)
+- `SharedTooltipContent`: `skipNull` option (LineChart).
+- `tooltipProps`: `crosshair` override option (LineChart).
+- `valueAxisProps`: `titleFontSize`, or a default around 13px to match Highcharts (DualAxis, LineChart).
+- `categoryAxisProps`: no tick marks, to match the originals (LineChart).
+- Legend: a dot-only or 12px `lineMarker` symbol (DualAxis).
+- Move `alignedScales` from DualAxisChart into core if other charts get two axes.
+- `defaultTooltipIndex` is the agreed name for static-tooltip props across charts.
+- A theme token for waterfall totals or neutral bars (Waterfall).
 
 ## Phase 4: new components (all confirmed in scope, see D2)
 
