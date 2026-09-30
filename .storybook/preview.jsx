@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { ThemeProvider, useTheme } from '../src/originals/theme/ThemeContext';
+import { ChartThemeProvider } from '../src/theme';
 
 // ThemeProvider owns its dark-mode state (seeded from the OS preference), so the
 // toolbar toggle drives it through toggleTheme rather than a prop.
@@ -38,10 +39,14 @@ const preview = {
     },
     decorators: [
         (Story, context) => (
+            // Originals read the app ThemeProvider; rebuilt charts read ChartThemeProvider.
+            // Both follow the toolbar so Comparison stories switch together.
             <ThemeProvider>
-                <ThemeSync mode={context.globals.theme}>
-                    <Story />
-                </ThemeSync>
+                <ChartThemeProvider mode={context.globals.theme === 'dark' ? 'dark' : 'light'}>
+                    <ThemeSync mode={context.globals.theme}>
+                        <Story />
+                    </ThemeSync>
+                </ChartThemeProvider>
             </ThemeProvider>
         ),
     ],
