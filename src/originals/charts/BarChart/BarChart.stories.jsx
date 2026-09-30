@@ -7,12 +7,12 @@ import {
     newBuyers,
     regionSeries,
     returningBuyers,
-} from '../fixtures';
+} from '../../../charts/fixtures';
 
 import BarChart from './BarChart';
 
 export default {
-    title: 'Charts/BarChart',
+    title: 'Originals/BarChart',
     component: BarChart,
     tags: ['autodocs'],
     args: {

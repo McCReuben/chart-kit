@@ -10,7 +10,7 @@ const rows = [
 ];
 
 export default {
-    title: 'Spec/ChartSegment',
+    title: 'Originals/ChartSegment',
     component: ChartSegment,
     tags: ['autodocs'],
 };

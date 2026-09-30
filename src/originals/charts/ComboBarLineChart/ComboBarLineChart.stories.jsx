@@ -1,9 +1,9 @@
-import { PALETTE, WEEKS, revenueForecast, revenueThisYear } from '../fixtures';
+import { PALETTE, WEEKS, revenueForecast, revenueThisYear } from '../../../charts/fixtures';
 
 import ComboBarLineChart from './ComboBarLineChart';
 
 export default {
-    title: 'Charts/ComboBarLineChart',
+    title: 'Originals/ComboBarLineChart',
     component: ComboBarLineChart,
     tags: ['autodocs'],
     args: {

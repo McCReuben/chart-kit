@@ -1,4 +1,4 @@
-import { PALETTE, WEEKS, revenueForecast, revenueLastYear, revenueThisYear } from '../fixtures';
+import { PALETTE, WEEKS, revenueForecast, revenueLastYear, revenueThisYear } from '../../../charts/fixtures';
 
 import LineChart from './LineChart';
 
@@ -9,7 +9,7 @@ const series = [
 ];
 
 export default {
-    title: 'Charts/LineChart',
+    title: 'Originals/LineChart',
     component: LineChart,
     tags: ['autodocs'],
     args: {

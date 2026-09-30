@@ -1,9 +1,9 @@
-import { PALETTE, WEEKS, conversionRate, revenueLastYear, revenueThisYear } from '../fixtures';
+import { PALETTE, WEEKS, conversionRate, revenueLastYear, revenueThisYear } from '../../../charts/fixtures';
 
 import DualAxisChart from './DualAxisChart';
 
 export default {
-    title: 'Charts/DualAxisChart',
+    title: 'Originals/DualAxisChart',
     component: DualAxisChart,
     tags: ['autodocs'],
     args: {

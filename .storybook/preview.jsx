@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+import { ThemeProvider, useTheme } from '../src/originals/theme/ThemeContext';
 
 // ThemeProvider owns its dark-mode state (seeded from the OS preference), so the
 // toolbar toggle drives it through toggleTheme rather than a prop.

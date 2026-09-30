@@ -1,9 +1,9 @@
-import { waterfallRows } from '../fixtures';
+import { waterfallRows } from '../../../charts/fixtures';
 
 import WaterfallChart from './WaterfallChart';
 
 export default {
-    title: 'Charts/WaterfallChart',
+    title: 'Originals/WaterfallChart',
     component: WaterfallChart,
     tags: ['autodocs'],
     args: {
