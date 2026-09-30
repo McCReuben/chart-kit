@@ -158,7 +158,7 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
   - `xLabel` is ignored by Bar and DualAxis (they have no x title prop).
 - Candidate token: `cardBorder` (light `rgba(9,104,246,0.08)`, dark `rgba(255,255,255,0.12)`).
 
-### Core follow-ups requested by chart agents (core pass in progress, subagent `core-2`)
+### Core follow-ups requested by chart agents (done in the core pass, see "Core API changes after 3b")
 - `SharedTooltipContent`: `skipNull` option (LineChart).
 - `tooltipProps`: `crosshair` override option (LineChart).
 - `valueAxisProps`: `titleFontSize`, or a default around 13px to match Highcharts (DualAxis, LineChart).
@@ -168,6 +168,29 @@ report format, plus a chart-specific feature list. Each builds Storybook into it
 - Fix the `categoryAxisProps` identity loop (BarChart). Add `ChartLegend` `symbolGap` and a `tooltipProps` positioner.
 - `defaultTooltipIndex` is the agreed name for static-tooltip props across charts.
 - A theme token for waterfall totals or neutral bars (Waterfall).
+
+### Core API changes after 3b (core pass)
+- `categoryAxisProps`, `valueAxisProps`, `gridProps` and `tooltipProps` return the **same object for equal inputs**
+  (`propCache.ts`: LRU per theme, keyed by content; functions and elements compared by identity). This fixes the
+  infinite loop with `width:'auto'` plus `PlotAreaProbe`. Treat results as read-only.
+- `categoryAxisProps`: `tickMarks?: boolean` (default **false**, matching the originals) and `titleFontSize?`.
+- `valueAxisProps`: `titleFontSize?` (default `AXIS_TITLE_FONT_SIZE` = **13**, matching the originals).
+- `tooltipProps(theme, { crosshair?: boolean | { color?, width?, dashArray? } })`.
+- `SharedTooltipContent({ skipNull? })` leaves out null points.
+- `ChartLegend({ symbolGap? = 5 })`. `LegendSymbolKind` gains `'marker'` (a hollow ring).
+- `useSeriesHover({ dimOpacity?: number | ((id) => number) })`: returning 1 means never dimmed.
+- `brighten(color, amount)` and `parseRgb(color)` in `src/core/color.ts`.
+- Theme token `neutral` (base `palette[0]`), used for waterfall totals.
+- Workarounds removed:
+  - Bar: axis memoising.
+  - DualAxis: local title size.
+  - Line: local tooltip content and crosshair.
+  - Combo: local brighten and spline opacity.
+- Visual changes: no x tick marks (Line/Bar/Combo/DualAxis); 13px value-axis titles (Combo keeps 11 explicitly);
+  DualAxis solid-spline legend symbol is now a ring.
+- Not done: BarChart keeps `filter: brightness(0.95)` (different maths from `brighten`). The `tooltipProps` positioner
+  was not in scope; BarChart positions its content itself.
+- Known: a custom `palette` without `neutral` leaves waterfall totals in the base blue (set `neutral` or `totalColor`).
 
 ## Phase 4: new components (all confirmed in scope, see D2)
 
