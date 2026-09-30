@@ -103,3 +103,4 @@ export type {
 // Charts
 export * from './charts/WaterfallChart';
 export * from './charts/DualAxisChart';
+export * from './charts/LineChart';
