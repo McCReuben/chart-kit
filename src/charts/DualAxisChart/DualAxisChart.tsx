@@ -1,6 +1,5 @@
-import { isValidElement, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Line, Tooltip, XAxis, YAxis } from 'recharts';
-import type { YAxisProps } from 'recharts';
 
 import {
     CHART_MARGIN,
@@ -117,16 +116,6 @@ function isDashed(s: DualAxisSeries): boolean {
     return seriesKind(s) === 'spline' && (s.dashStyle === 'Dash' || s.dashStyle === 'dash');
 }
 
-// The original's value-axis titles use the chart library's default title size (0.8em of the 16px root), larger than
-// the 11px tick labels that `valueAxisProps` also uses for titles.
-const AXIS_TITLE_FONT_SIZE = 13;
-
-function withTitleSize(props: YAxisProps): YAxisProps {
-    const label = props.label;
-    if (!label || typeof label !== 'object' || isValidElement(label)) return props;
-    return { ...props, label: { ...(label as object), fontSize: AXIS_TITLE_FONT_SIZE } };
-}
-
 const COLUMN_RADIUS: [number, number, number, number] = [3, 3, 0, 0];
 const MARKER_FILL = '#FFFFFF';
 
@@ -210,7 +199,7 @@ export function DualAxisChart({
         key: s.key,
         name: s.name,
         color: s.color,
-        symbol: seriesKind(s.input) === 'column' ? 'square' : isDashed(s.input) ? 'dashed' : 'lineMarker',
+        symbol: seriesKind(s.input) === 'column' ? 'square' : isDashed(s.input) ? 'dashed' : 'marker',
         hidden: visibility.isHidden(s.key),
     }));
     const tooltipItems: TooltipSeriesItem[] = resolved.map((s) => ({
@@ -259,24 +248,24 @@ export function DualAxisChart({
                 {yAxisVisible ? <CartesianGrid {...gridProps(theme, { yAxisId: gridAxis })} /> : null}
                 <XAxis {...categoryAxisProps(theme, { categories: stableCats, labelFormatter: fmtLabel, rotateLabels: true })} />
                 <YAxis
-                    {...withTitleSize(valueAxisProps(theme, {
+                    {...valueAxisProps(theme, {
                         position: 'left',
                         axisId: LEFT,
                         scale: leftScale,
                         formatter: fmtLeft,
                         title: yAxisTitle ?? undefined,
                         hide: !yAxisVisible || !leftScale,
-                    }))}
+                    })}
                 />
                 <YAxis
-                    {...withTitleSize(valueAxisProps(theme, {
+                    {...valueAxisProps(theme, {
                         position: 'right',
                         axisId: RIGHT,
                         scale: rightScale,
                         formatter: fmtRight,
                         title: y2AxisTitle ?? undefined,
                         hide: !yAxisVisible || !rightScale,
-                    }))}
+                    })}
                 />
                 <Tooltip
                     {...tooltipProps(theme)}

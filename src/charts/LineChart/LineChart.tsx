@@ -5,14 +5,10 @@ import {
     CHART_MARGIN,
     ChartFrame,
     ChartLegend,
-    CrosshairCursor,
     NearestSeriesTracker,
     PlotAreaProbe,
     ResetZoomButton,
-    TooltipFrame,
-    TooltipMarker,
-    TooltipRow,
-    TooltipTitle,
+    SharedTooltipContent,
     ZoomSelection,
     buildRows,
     categoryAxisProps,
@@ -30,9 +26,9 @@ import {
     useUniqueId,
     useXZoom,
     valueAxisProps,
-    type ChartRow,
     type IndexRange,
     type SeriesInput,
+    type TooltipSeriesItem,
 } from '../../core';
 import { useChartTheme, type ChartThemeOverrides } from '../../theme';
 import { HoverTrail } from './HoverTrail';
@@ -125,49 +121,10 @@ export interface LineChartProps {
 const DEFAULT_LINE_WIDTH = 2.5;
 const DEFAULT_MARKER_RADIUS = 5;
 
-interface LineTooltipItem {
-    key: string;
-    name: string;
-    color: string;
+interface LineTooltipItem extends TooltipSeriesItem {
     dashed: boolean;
     hidden: boolean;
     input: LineChartSeries;
-}
-
-interface LineTooltipContentProps {
-    items: ReadonlyArray<LineTooltipItem>;
-    rows: ReadonlyArray<ChartRow>;
-    headerFormatter: (category: string | number, index: number) => string;
-    valueFormatter: (value: number | null, series: LineChartSeries) => string;
-    active?: boolean;
-    activeIndex?: number | string;
-    payload?: ReadonlyArray<{ payload?: unknown }>;
-}
-
-/** Shared tooltip as in the original: bold header, then one row per visible series that has a value here. */
-function LineTooltipContent({ items, rows, headerFormatter, valueFormatter, active, activeIndex, payload }: LineTooltipContentProps) {
-    if (!active) return null;
-    const idx = activeIndex === undefined || activeIndex === null ? NaN : Number(activeIndex);
-    const row = (Number.isInteger(idx) ? rows[idx] : undefined) ?? (payload?.[0]?.payload as ChartRow | undefined);
-    if (!row) return null;
-    const shown = items.filter((s) => {
-        const v = row[s.key];
-        return !s.hidden && typeof v === 'number' && Number.isFinite(v);
-    });
-    if (!shown.length) return null;
-    return (
-        <TooltipFrame>
-            <TooltipTitle>{headerFormatter(row.category, row.index)}</TooltipTitle>
-            {shown.map((s) => (
-                <TooltipRow
-                    key={s.key}
-                    marker={<TooltipMarker kind={s.dashed ? 'dashed' : 'square'} color={s.color} />}
-                    label={s.name}
-                    value={valueFormatter(row[s.key] as number, s.input)}
-                />
-            ))}
-        </TooltipFrame>
-    );
 }
 
 /**
@@ -217,6 +174,9 @@ export function LineChart({
     const fmtTooltipValue = useStableCallback((v: number | null, s: LineChartSeries) =>
         tooltipValueFormatter ? tooltipValueFormatter(v, s) : defaultValueFormatter(v),
     );
+    const fmtTooltipSeriesValue = useStableCallback((v: number | null, s: TooltipSeriesItem) =>
+        fmtTooltipValue(v, (s as LineTooltipItem).input),
+    );
 
     const visibility = useSeriesVisibility(
         resolved.map((s) => s.key),
@@ -244,6 +204,7 @@ export function LineChart({
                 name: s.name,
                 color: s.color,
                 dashed: isDashed((s.input as LineChartSeries).dashStyle),
+                marker: isDashed((s.input as LineChartSeries).dashStyle) ? ('dashed' as const) : ('square' as const),
                 hidden: visibility.isHidden(s.key),
                 input: s.input as LineChartSeries,
             })),
@@ -257,18 +218,11 @@ export function LineChart({
         return tickPositions.filter((i) => Number.isInteger(i) && i >= first && i <= last);
     }, [tickPositions, rows]);
 
-    const cursor = useMemo(() => {
-        if (crosshair === false) return false;
-        if (crosshair === undefined || crosshair === true) return tooltipProps(theme).cursor;
+    const cursorOption = useMemo(() => {
+        if (crosshair === undefined || typeof crosshair === 'boolean') return crosshair;
         const w = crosshair.width ?? 1;
-        return (
-            <CrosshairCursor
-                color={crosshair.color ?? theme.crosshair}
-                lineWidth={w}
-                dashArray={dashArrayFor(crosshair.dashStyle, w) ?? 'none'}
-            />
-        );
-    }, [crosshair, theme]);
+        return { color: crosshair.color, width: w, dashArray: dashArrayFor(crosshair.dashStyle, w) ?? 'none' };
+    }, [crosshair]);
 
     if (!stableSeries.length) return null;
 
@@ -316,15 +270,15 @@ export function LineChart({
                     {...valueAxisProps(theme, { scale, formatter: fmtY, title: yAxisTitle, hide: !yAxisVisible })}
                 />
                 <Tooltip
-                    {...tooltipProps(theme)}
-                    cursor={cursor}
+                    {...tooltipProps(theme, { crosshair: cursorOption })}
                     defaultIndex={defaultTooltipIndex}
                     content={
-                        <LineTooltipContent
-                            items={items}
+                        <SharedTooltipContent
+                            series={items}
                             rows={rows}
                             headerFormatter={fmtHeader}
-                            valueFormatter={fmtTooltipValue}
+                            valueFormatter={fmtTooltipSeriesValue}
+                            skipNull
                         />
                     }
                 />

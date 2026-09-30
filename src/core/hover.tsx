@@ -15,8 +15,12 @@ export const DIM_TRANSITION = 'opacity 120ms ease-out';
 
 /** Options of {@link useSeriesHover}. */
 export interface SeriesHoverOptions {
-    /** Opacity of the other series (default 0.4). */
-    dimOpacity?: number;
+    /**
+     * Opacity of the other series while one is hovered (default 0.4). Pass a function `(id) => opacity` to dim
+     * series differently, or return 1 to keep a series undimmed (for example, only splines fade in a combo chart).
+     * The latest function is always used, so an inline function is fine.
+     */
+    dimOpacity?: number | ((id: string) => number);
     /** Initially hovered series (for static demos/tests). */
     initial?: string | null;
 }
@@ -29,9 +33,9 @@ export interface SeriesHover {
     setHovered: (id: string | null) => void;
     /** Clear the hovered series. Stable identity. */
     clear: () => void;
-    /** `true` when another series is hovered. */
+    /** `true` when another series is hovered (even if its `dimOpacity` is 1). */
     isDimmed: (id: string) => boolean;
-    /** 1, or `dimOpacity` when dimmed. */
+    /** 1, or the series' `dimOpacity` when dimmed. */
     opacityOf: (id: string) => number;
     /**
      * Props to spread on a Recharts graphical item (`<Line>`, `<Bar>`, `<Area>`, `<Scatter>`): an inline `style`
@@ -48,13 +52,17 @@ export interface SeriesHover {
  * legend (`ChartLegend onItemHover`).
  */
 export function useSeriesHover(opts: SeriesHoverOptions = {}): SeriesHover {
-    const dim = opts.dimOpacity ?? DIM_OPACITY;
+    const dimOption = opts.dimOpacity ?? DIM_OPACITY;
+    const dimFnRef = useRef<((id: string) => number) | null>(null);
+    dimFnRef.current = typeof dimOption === 'function' ? dimOption : null;
+    // A function option is read through the ref, so a new inline function does not rebuild the result.
+    const dim = typeof dimOption === 'function' ? -1 : dimOption;
     const [hovered, setHoveredState] = useState<string | null>(opts.initial ?? null);
     const setHovered = useCallback((id: string | null) => setHoveredState(id), []);
     const clear = useCallback(() => setHoveredState(null), []);
     return useMemo(() => {
         const isDimmed = (id: string) => hovered !== null && hovered !== id;
-        const opacityOf = (id: string) => (isDimmed(id) ? dim : 1);
+        const opacityOf = (id: string) => (isDimmed(id) ? (dimFnRef.current ? dimFnRef.current(id) : dim) : 1);
         return {
             hovered,
             setHovered,

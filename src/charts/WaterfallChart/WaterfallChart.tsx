@@ -101,7 +101,7 @@ export interface WaterfallChartProps {
     yDomain?: readonly [number, number];
     /** Draw a zero line labelled "0" when the rows have both positive and negative values. Default false. */
     showZeroLine?: boolean;
-    /** Colour of totals and rows without `kind`/`color`. Default `theme.palette[0]`. */
+    /** Colour of totals and rows without `kind`/`color`. Default `theme.neutral` (the base theme's `palette[0]`). */
     totalColor?: string;
     /** Background colour. Default `theme.componentBackground`; `'transparent'` is allowed. */
     backgroundColor?: string;

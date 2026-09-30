@@ -7,9 +7,11 @@ import { contentKey, useUniqueId } from './stable';
 
 /**
  * Legend symbol kinds: `square` (bars/areas), `circle` (scatter/bubble), `line`/`dashed` (lines), `lineMarker`
- * (line with circle marker, as the original DualAxisChart), `hatch` (hatched bars, e.g. forecasts).
+ * (line with circle marker), `marker` (the hollow point marker alone: a `size` px ring with a 2px series-colour
+ * stroke and `markerFill` inside, as the original DualAxisChart's solid splines), `hatch` (hatched bars, e.g.
+ * forecasts).
  */
-export type LegendSymbolKind = 'square' | 'circle' | 'line' | 'dashed' | 'lineMarker' | 'hatch';
+export type LegendSymbolKind = 'square' | 'circle' | 'line' | 'dashed' | 'lineMarker' | 'marker' | 'hatch';
 
 /** One legend entry. */
 export interface LegendItem {
@@ -35,7 +37,7 @@ export interface LegendSymbolProps {
     size?: number;
     /** Square corner radius (default 0; BarChart and DualAxisChart use 2). */
     radius?: number;
-    /** Background colour behind a `lineMarker` circle (default white, as the original DualAxisChart). */
+    /** Background colour inside a `lineMarker`/`marker` circle (default white, as the original DualAxisChart). */
     markerFill?: string;
 }
 
@@ -49,6 +51,13 @@ export function LegendSymbol({ kind = 'square', color, size = 10, radius = 0, ma
                     <HatchPattern id={hatchId} color={color} spacing={4} strokeWidth={1.5} />
                 </defs>
                 <rect x={0.5} y={0.5} width={size - 1} height={size - 1} rx={radius} fill={`url(#${hatchId})`} stroke={color} strokeWidth={1} />
+            </svg>
+        );
+    }
+    if (kind === 'marker') {
+        return (
+            <svg width={size} height={size} aria-hidden="true" style={{ flexShrink: 0, display: 'block' }}>
+                <circle cx={size / 2} cy={size / 2} r={Math.max(1, size / 2 - 1)} fill={markerFill} stroke={color} strokeWidth={2} />
             </svg>
         );
     }
@@ -103,6 +112,8 @@ export interface ChartLegendProps {
     symbolSize?: number;
     /** Square symbol radius (default 0; 2 for BarChart/DualAxisChart). */
     symbolRadius?: number;
+    /** Gap in px between a symbol and its label (default 5, the originals' `symbolPadding`). */
+    symbolGap?: number;
     /** Theme; default the context theme. */
     theme?: ChartTheme;
     /** Extra styles on the legend container. */
@@ -111,7 +122,7 @@ export interface ChartLegendProps {
 
 /**
  * The originals' legend: centred below the chart, horizontal (wrapping), 12px normal-weight `text.primary`, 20px
- * between items, 5px between symbol and label. Clicking toggles the series unless `onItemClick` is given; hidden
+ * between items, 5px between symbol and label (`symbolGap`). Clicking toggles the series unless `onItemClick` is given; hidden
  * items are drawn in `theme.inactiveLegend`. Items are buttons with `aria-pressed` (pressed = visible).
  */
 export function ChartLegend({
@@ -121,6 +132,7 @@ export function ChartLegend({
     onItemHover,
     symbolSize = 10,
     symbolRadius = 0,
+    symbolGap = 5,
     theme: themeProp,
     style,
 }: ChartLegendProps) {
@@ -160,7 +172,7 @@ export function ChartLegend({
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 5,
+                            gap: symbolGap,
                             margin: 0,
                             padding: 0,
                             border: 0,

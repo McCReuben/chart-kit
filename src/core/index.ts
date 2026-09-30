@@ -1,4 +1,5 @@
 export {
+    AXIS_TITLE_FONT_SIZE,
     ActiveCategoryTick,
     CategoryTick,
     ROTATED_LABEL_ANGLE,
@@ -14,6 +15,7 @@ export type {
     GridOptions,
     ValueAxisOptions,
 } from './axes';
+export { brighten, parseRgb } from './color';
 export { CHART_MARGIN, CHART_SPACING, ChartFrame } from './ChartFrame';
 export type { ChartFrameProps } from './ChartFrame';
 export { CrosshairCursor } from './CrosshairCursor';
@@ -72,6 +74,7 @@ export type {
     MarkerKind,
     SharedTooltipContentProps,
     TooltipFrameProps,
+    TooltipCrosshairOptions,
     TooltipMarkerProps,
     TooltipPropsOptions,
     TooltipRowProps,

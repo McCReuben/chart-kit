@@ -4,9 +4,17 @@ import type { CartesianGridProps, XAxisProps, YAxisProps } from 'recharts';
 import { useChartTheme } from '../theme/ChartThemeProvider';
 import type { ChartTheme } from '../theme/types';
 import type { NiceScale } from './niceScale';
+import { cachedProps, optionsKey } from './propCache';
 
 /** The originals' rotation for crowded category labels. */
 export const ROTATED_LABEL_ANGLE = -45;
+
+/**
+ * Default font size (px) of value-axis titles: the originals' chart-library default (0.8em of the 16px root, about
+ * 13px), larger than the 11px tick labels. Category-axis titles default to `theme.fontSize.axis` (the originals set
+ * 11px on x titles explicitly).
+ */
+export const AXIS_TITLE_FONT_SIZE = 13;
 
 /** Space (px) reserved above labels for the active-category dot of {@link ActiveCategoryTick}. */
 const ACTIVE_DOT_SPACE = 8;
@@ -160,6 +168,13 @@ export interface CategoryAxisOptions {
     rotateLabels?: boolean | number;
     /** Axis title (x title uses `theme.axisLabel`, 11px). */
     title?: string;
+    /** Title font size in px; default `theme.fontSize.axis` (11, as the originals' x titles). */
+    titleFontSize?: number;
+    /**
+     * Draw small tick marks between the axis line and the labels. Default `false`: the originals draw none. The label
+     * offset is the same either way, so turning them on does not move the labels.
+     */
+    tickMarks?: boolean;
     /**
      * Enables {@link ActiveCategoryTick}: the category whose axis value equals this is highlighted. Pass `null` to
      * reserve the dot space without highlighting anything (keeps labels from jumping when hover starts).
@@ -214,10 +229,20 @@ export function categoryAxisProps(theme: ChartTheme, opts?: CategoryAxisOptions 
 export function categoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions & { position: 'left' }): YAxisProps;
 /**
  * Props for the category axis, recreating the originals: labels `theme.axisLabel` 11px in the theme font, axis
- * line and ticks `theme.componentBorder`, optional -45° rotated labels anchored at their end, optional title.
+ * line `theme.componentBorder`, no tick marks (see `tickMarks`), optional -45° rotated labels anchored at their end,
+ * optional title.
  * Spread onto `<XAxis>` (or `<YAxis>` with `position: 'left'`): `<XAxis {...categoryAxisProps(theme, {...})} />`.
+ *
+ * Stable identity: equal inputs return the **same object** (and so the same `tick` element and `tickFormatter`).
+ * Options are compared by content, functions (`labelFormatter`) by identity and `theme` by identity, so pass stable
+ * formatters (`useStableCallback`). This keeps `width="auto"` axes from re-measuring in a loop. The result is shared:
+ * spread it, never mutate it.
  */
 export function categoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions = {}): XAxisProps | YAxisProps {
+    return cachedProps(theme, `category:${optionsKey(opts)}`, () => buildCategoryAxisProps(theme, opts));
+}
+
+function buildCategoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions): XAxisProps | YAxisProps {
     const left = opts.position === 'left';
     const angle = left ? 0 : opts.rotateLabels === true ? ROTATED_LABEL_ANGLE : typeof opts.rotateLabels === 'number' ? opts.rotateLabels : 0;
     const highlight = opts.activeValue !== undefined;
@@ -232,7 +257,7 @@ export function categoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions =
         allowDuplicatedCategory: true,
         hide: opts.hide,
         axisLine: { stroke: theme.componentBorder },
-        tickLine: { stroke: theme.componentBorder },
+        tickLine: opts.tickMarks ? { stroke: theme.componentBorder } : false,
         tickSize: highlight && !left ? 4 : 6,
         tickMargin: 2,
         tick,
@@ -255,7 +280,7 @@ export function categoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions =
                       position: 'insideLeft',
                       style: { textAnchor: 'middle' },
                       fill: theme.axisLabel,
-                      fontSize: theme.fontSize.axis,
+                      fontSize: opts.titleFontSize ?? theme.fontSize.axis,
                       fontFamily: theme.fontFamily,
                   }
                 : undefined,
@@ -291,7 +316,7 @@ export function categoryAxisProps(theme: ChartTheme, opts: CategoryAxisOptions =
                   value: opts.title,
                   position: 'insideBottom',
                   fill: theme.axisLabel,
-                  fontSize: theme.fontSize.axis,
+                  fontSize: opts.titleFontSize ?? theme.fontSize.axis,
                   fontFamily: theme.fontFamily,
               }
             : undefined,
@@ -304,8 +329,10 @@ export interface ValueAxisOptions {
     position?: 'left' | 'right' | 'bottom';
     /** Tick label formatter; default Recharts' number formatting. Pass a stable function. */
     formatter?: (value: number) => string;
-    /** Axis title (y title uses `theme.text.primary`, 11px, rotated). */
+    /** Axis title (y title uses `theme.text.primary`, {@link AXIS_TITLE_FONT_SIZE} px, rotated). */
     title?: string;
+    /** Title font size in px; default {@link AXIS_TITLE_FONT_SIZE} (13, the originals' default title size). */
+    titleFontSize?: number;
     /** Nice scale from `niceScale()`; sets `domain` and `ticks` (original-style ticks). */
     scale?: NiceScale;
     /** Hide the axis (labels and title) but keep scaling, like the originals' `visible: false`. */
@@ -322,10 +349,17 @@ export function valueAxisProps(theme: ChartTheme, opts?: ValueAxisOptions & { po
 export function valueAxisProps(theme: ChartTheme, opts: ValueAxisOptions & { position: 'bottom' }): XAxisProps;
 /**
  * Props for the value axis, recreating the originals: no axis line, no tick marks, labels `theme.axisLabel` 11px in
- * the theme font, optional title in `theme.text.primary`, optional original-style nice ticks.
+ * the theme font, optional 13px title in `theme.text.primary`, optional original-style nice ticks.
  * Spread onto `<YAxis>` (or `<XAxis>` with `position: 'bottom'`).
+ *
+ * Stable identity: equal inputs return the same object (options, including `scale`, by content; `formatter` by
+ * identity; `theme` by identity). See {@link categoryAxisProps}. The result is shared: never mutate it.
  */
 export function valueAxisProps(theme: ChartTheme, opts: ValueAxisOptions = {}): XAxisProps | YAxisProps {
+    return cachedProps(theme, `value:${optionsKey(opts)}`, () => buildValueAxisProps(theme, opts));
+}
+
+function buildValueAxisProps(theme: ChartTheme, opts: ValueAxisOptions): XAxisProps | YAxisProps {
     const common = {
         type: 'number' as const,
         hide: opts.hide,
@@ -348,7 +382,7 @@ export function valueAxisProps(theme: ChartTheme, opts: ValueAxisOptions = {}): 
                   position,
                   style: { textAnchor: 'middle' as const },
                   fill: theme.text.primary,
-                  fontSize: theme.fontSize.axis,
+                  fontSize: opts.titleFontSize ?? AXIS_TITLE_FONT_SIZE,
                   fontFamily: theme.fontFamily,
               }
             : undefined;
@@ -383,9 +417,13 @@ export interface GridOptions {
 
 /**
  * Props for `<CartesianGrid>`: solid grid lines in `theme.gridLine` along the value axis only (the originals'
- * `gridLineColor`), no background fill.
+ * `gridLineColor`), no background fill. Equal inputs return the same object (see {@link categoryAxisProps}).
  */
 export function gridProps(theme: ChartTheme, opts: GridOptions = {}): CartesianGridProps {
+    return cachedProps(theme, `grid:${optionsKey(opts)}`, () => buildGridProps(theme, opts));
+}
+
+function buildGridProps(theme: ChartTheme, opts: GridOptions): CartesianGridProps {
     const vertical = opts.direction === 'vertical';
     return {
         stroke: theme.gridLine,

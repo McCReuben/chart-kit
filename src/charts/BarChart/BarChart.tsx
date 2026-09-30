@@ -226,15 +226,9 @@ export function BarChart<S extends BarSeries = BarSeries>({
 
     const gaps = barGaps(mode, visibleKeys.length);
     const rotate = horizontal ? false : (rotateXAxisLabels ?? !isQuarterAxis(stableCats));
-    // Memoised: a left axis with `width="auto"` re-measures whenever its props change identity.
-    const leftCategoryAxis = useMemo(
-        () => categoryAxisProps(theme, { position: 'left', categories: stableCats, labelFormatter: fmtLabel }),
-        [theme, stableCats, fmtLabel],
-    );
-    const leftValueAxis = useMemo(
-        () => valueAxisProps(theme, { scale, formatter: fmtAxis, title: yAxisTitle, hide: !yAxisVisible }),
-        [theme, scale, fmtAxis, yAxisTitle, yAxisVisible],
-    );
+    // The core factories return the same props for equal inputs, so `width="auto"` axes do not re-measure in a loop.
+    const leftCategoryAxis = categoryAxisProps(theme, { position: 'left', categories: stableCats, labelFormatter: fmtLabel });
+    const leftValueAxis = valueAxisProps(theme, { scale, formatter: fmtAxis, title: yAxisTitle, hide: !yAxisVisible });
     const clickable = Boolean(onPointClick || onLegendClick);
 
     const items: LegendItem[] = resolved.map((s) => ({

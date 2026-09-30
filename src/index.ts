@@ -17,6 +17,7 @@ export type {
 
 // Core building blocks
 export {
+    AXIS_TITLE_FONT_SIZE,
     ActiveCategoryTick,
     CHART_MARGIN,
     CHART_SPACING,
@@ -38,6 +39,7 @@ export {
     TooltipRow,
     TooltipTitle,
     ZoomSelection,
+    brighten,
     buildRows,
     categoryAxisProps,
     currencyFormatter,
@@ -48,6 +50,7 @@ export {
     gridProps,
     niceScale,
     numberFormatter,
+    parseRgb,
     percentFormatter,
     resolveSeries,
     retailWeekFormatter,
@@ -92,6 +95,7 @@ export type {
     TooltipMarkerProps,
     TooltipRowProps,
     TooltipSeriesItem,
+    TooltipCrosshairOptions,
     TooltipTitleProps,
     TooltipVariant,
     ValueAxisOptions,

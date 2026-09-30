@@ -92,6 +92,11 @@ export interface ChartTheme {
     forecast: string;
     /** Budget / target series colour. */
     budget: string;
+    /**
+     * Neutral data colour: waterfall totals and bars that are neither an increase nor a decrease. Defaults to the
+     * first palette colour of the base theme (`palette[0]`); overriding `palette` does not change it.
+     */
+    neutral: string;
     /** Accent colour for highlighting the hovered category (active tick, reference line). */
     accent: string;
     /** Font family for all chart text. `'inherit'` uses the host page font. */

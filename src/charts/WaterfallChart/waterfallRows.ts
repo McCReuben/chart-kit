@@ -123,11 +123,11 @@ export function toWaterfallRows(
 
 /**
  * Colour of a row: its own `color`, else the theme's `positive` (increase), `negative` (decrease) or `totalColor`
- * (totals and rows without `kind`; default `theme.palette[0]`).
+ * (totals and rows without `kind`; default `theme.neutral`, which is `palette[0]` of the base theme).
  */
 export function resolveWaterfallColor(row: WaterfallRow, theme: ChartTheme, totalColor?: string): string {
     if (row.color) return row.color;
     if (row.kind === 'increase') return theme.positive;
     if (row.kind === 'decrease') return theme.negative;
-    return totalColor ?? theme.palette[0] ?? theme.text.secondary;
+    return totalColor ?? theme.neutral ?? theme.palette[0] ?? theme.text.secondary;
 }

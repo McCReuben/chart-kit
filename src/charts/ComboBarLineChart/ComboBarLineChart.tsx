@@ -10,6 +10,7 @@ import {
     SharedTooltipContent,
     ZoomSelection,
     buildRows,
+    brighten,
     categoryAxisProps,
     defaultCategoryFormatter,
     defaultValueFormatter,
@@ -84,23 +85,6 @@ export interface ComboBarLineChartProps {
     ariaLabel?: string;
 }
 
-/** Original-style `brighten`: adds `amount * 255` to each RGB channel. Returns the input if it can't be parsed. */
-function brighten(color: string, amount: number): string {
-    let rgb: number[] | null = null;
-    const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color.trim());
-    if (hex) {
-        const h = hex[1].length === 3 ? hex[1].replace(/./g, (c) => c + c) : hex[1];
-        rgb = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
-    } else {
-        const m = /^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i.exec(color.trim());
-        if (m) rgb = [m[1], m[2], m[3]].map(Number);
-    }
-    if (!rgb) return color;
-    const d = Math.round(255 * amount);
-    const out = rgb.map((c) => Math.max(0, Math.min(255, c + d)));
-    return `rgb(${out.join(', ')})`;
-}
-
 /** The original's default `inactive` opacity, which the original leaves on for splines (columns keep opacity 1). */
 const SPLINE_INACTIVE_OPACITY = 0.2;
 /** Original `groupPadding` and `pointPadding` of the columns. */
@@ -157,7 +141,10 @@ export function ComboBarLineChart({
         resolved.map((s) => s.key),
         resolved.map((s) => s.name),
     );
-    const hover = useSeriesHover();
+    // Legend hover sets `inactive` on the other series; only splines fade (the original's columns keep opacity 1).
+    const hover = useSeriesHover({
+        dimOpacity: (key) => ((resolved.find((s) => s.key === key)?.input as ComboSeries | undefined)?.type === 'spline' ? SPLINE_INACTIVE_OPACITY : 1),
+    });
     const zoom = useXZoom({ length: allRows.length, resetKey: allRows });
     const rows = useMemo(() => zoom.sliceRows(allRows), [zoom.sliceRows, allRows]);
 
@@ -209,9 +196,6 @@ export function ComboBarLineChart({
     const barCategoryGap = `${(GROUP_PADDING + POINT_PADDING * pointSlot) * 100}%`;
     const barGap = `${2 * POINT_PADDING * pointSlot * 100}%`;
 
-    // Legend hover sets `inactive` on the other series; only splines fade (the original's columns keep opacity 1).
-    const splineOpacity = (key: string) => (hover.hovered && hover.hovered !== key ? SPLINE_INACTIVE_OPACITY : 1);
-
     return (
         <ChartFrame
             height={height}
@@ -242,7 +226,7 @@ export function ComboBarLineChart({
                         title: xAxisTitle,
                     })}
                 />
-                <YAxis {...valueAxisProps(theme, { scale, formatter: fmtY, title: yAxisTitle })} />
+                <YAxis {...valueAxisProps(theme, { scale, formatter: fmtY, title: yAxisTitle, titleFontSize: 11 })} />
                 <Tooltip
                     {...tooltipProps(theme)}
                     {...(defaultTooltipIndex !== undefined ? { defaultIndex: defaultTooltipIndex, active: true } : {})}
@@ -281,7 +265,7 @@ export function ComboBarLineChart({
                         hide={visibility.isHidden(s.key)}
                         animationDuration={ANIMATION_MS}
                         animationEasing="ease-out"
-                        style={{ opacity: splineOpacity(s.key), transition: 'opacity 120ms ease-out' }}
+                        {...hover.dimProps(s.key)}
                     />
                 ))}
                 <PlotAreaProbe onChange={onPlotArea} />

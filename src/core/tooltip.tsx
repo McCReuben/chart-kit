@@ -5,6 +5,7 @@ import type { ChartTheme } from '../theme/types';
 import { CrosshairCursor } from './CrosshairCursor';
 import type { ChartRow } from './data';
 import { defaultCategoryFormatter, defaultValueFormatter } from './formatters';
+import { cachedProps, optionsKey } from './propCache';
 import { useUniqueId } from './stable';
 
 /** Look of a tooltip: `'default'` (theme surface, like the originals) or `'inverse'` (always dark). */
@@ -237,6 +238,11 @@ export interface SharedTooltipContentProps {
     valueFormatter?: (value: number | null, series: TooltipSeriesItem) => string;
     /** Frame look; default `'default'`. */
     variant?: TooltipVariant;
+    /**
+     * Leave out series whose value is null (or missing) at the hovered category, as the original charts do, instead of
+     * listing them with `'—'`. When no series has a value the tooltip is not shown. Default `false`.
+     */
+    skipNull?: boolean;
     /** Injected by Recharts. */
     active?: boolean;
     /** Injected by Recharts. */
@@ -249,7 +255,7 @@ export interface SharedTooltipContentProps {
 
 /**
  * Ready-made shared (category) tooltip in the originals' layout: bold header, then one row per visible series
- * `marker + "Name: value"`, null values as `'—'`. Use as `<Tooltip content={<SharedTooltipContent series={...} />} />`
+ * `marker + "Name: value"`, null values as `'—'` (or left out with `skipNull`). Use as `<Tooltip content={<SharedTooltipContent series={...} />} />`
  * or render it directly with `active` and `rows` + `activeIndex` for static display.
  */
 export function SharedTooltipContent({
@@ -258,6 +264,7 @@ export function SharedTooltipContent({
     headerFormatter = defaultCategoryFormatter,
     valueFormatter,
     variant = 'default',
+    skipNull = false,
     active,
     payload,
     activeIndex,
@@ -267,14 +274,17 @@ export function SharedTooltipContent({
     const row = ((rows && Number.isInteger(idx) ? rows[idx] : undefined) ??
         (payload?.[0]?.payload as ChartRow | undefined)) as ChartRow | undefined;
     if (!row) return null;
-    const visible = series.filter((s) => !s.hidden);
+    const valueOf = (key: string) => {
+        const raw = row[key];
+        return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+    };
+    const visible = series.filter((s) => !s.hidden && (!skipNull || valueOf(s.key) !== null));
     if (!visible.length) return null;
     return (
         <TooltipFrame variant={variant}>
             <TooltipTitle>{headerFormatter(row.category, row.index)}</TooltipTitle>
             {visible.map((s) => {
-                const raw = row[s.key];
-                const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+                const value = valueOf(s.key);
                 return (
                     <TooltipRow
                         key={s.key}
@@ -288,10 +298,23 @@ export function SharedTooltipContent({
     );
 }
 
+/** Crosshair style override of {@link tooltipProps}. Omitted fields keep the default look. */
+export interface TooltipCrosshairOptions {
+    /** Line colour; default `theme.crosshair`. */
+    color?: string;
+    /** Line width in px; default 1. */
+    width?: number;
+    /** SVG dash pattern; default `'1 3'` (dotted). `'none'` draws a solid line. */
+    dashArray?: string;
+}
+
 /** Options of {@link tooltipProps}. */
 export interface TooltipPropsOptions {
-    /** Draw the dotted crosshair cursor (default `true`). */
-    crosshair?: boolean;
+    /**
+     * Crosshair cursor: `true` (default) draws the originals' 1px dotted line in `theme.crosshair`, `false` hides it,
+     * and an object overrides its colour, width or dash pattern.
+     */
+    crosshair?: boolean | TooltipCrosshairOptions;
     /** Layout of the chart, for the crosshair direction (default `'horizontal'`, i.e. a vertical line). */
     layout?: 'horizontal' | 'vertical';
 }
@@ -316,13 +339,31 @@ export interface ChartTooltipBaseProps {
 }
 
 /**
- * Common `<Tooltip>` props of the originals: no animation, dotted crosshair cursor in `theme.crosshair`, no focus
- * outline, stays inside the chart. Add `content` yourself: `<Tooltip {...tooltipProps(theme)} content={...} />`.
+ * Common `<Tooltip>` props of the originals: no animation, dotted crosshair cursor in `theme.crosshair` (see
+ * `crosshair`), no focus outline, stays inside the chart. Add `content` yourself:
+ * `<Tooltip {...tooltipProps(theme)} content={...} />`. Equal inputs return the same object (stable `cursor` element);
+ * treat it as read-only.
  */
 export function tooltipProps(theme: ChartTheme, opts: TooltipPropsOptions = {}): ChartTooltipBaseProps {
+    return cachedProps(theme, `tooltip:${optionsKey(opts)}`, () => buildTooltipProps(theme, opts));
+}
+
+function buildTooltipProps(theme: ChartTheme, opts: TooltipPropsOptions): ChartTooltipBaseProps {
+    const crosshair = opts.crosshair ?? true;
+    const style = typeof crosshair === 'object' ? crosshair : {};
     return {
         isAnimationActive: false,
-        cursor: opts.crosshair === false ? false : <CrosshairCursor color={theme.crosshair} layout={opts.layout} />,
+        cursor:
+            crosshair === false ? (
+                false
+            ) : (
+                <CrosshairCursor
+                    color={style.color ?? theme.crosshair}
+                    lineWidth={style.width}
+                    dashArray={style.dashArray}
+                    layout={opts.layout}
+                />
+            ),
         wrapperStyle: { outline: 'none', zIndex: 10, pointerEvents: 'none' },
         offset: 14,
         allowEscapeViewBox: { x: false, y: false },
