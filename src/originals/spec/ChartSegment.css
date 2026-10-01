@@ -1,4 +1,4 @@
-/* Ported from cortexaife src/pages/chatbot/styles/report-frame.css, where these
+/* Ported from the source app's src/pages/chatbot/styles/report-frame.css, where these
  * rules were scoped under .chatbot-page and read the chatbot's CSS variables.
  * The variables keep their names; the fallbacks are the chatbot's own values
  * from src/pages/chatbot/styles/tokens.css (light, then dark below). */

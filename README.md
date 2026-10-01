@@ -1,6 +1,6 @@
 # chart-kit
 
-Reusable, theme-aware React chart components, extracted from the CortexAI frontend (`cortexaife-main`).
+Reusable, theme-aware React chart components, extracted from the source app's frontend.
 
 > **Status: phase 2 of 6. The charts were copied without changes.** The components are the originals with only their
 > import paths updated. They still depend on the source app's theme context and retail-week formatter. Phase 3
@@ -50,7 +50,7 @@ their font from the page (the source app sets Poppins globally), so the host app
 
 ## Where each file came from
 
-Paths are relative to `cortexaife-main/src/`.
+Paths are relative to the source app's `src/`.
 
 | Here                                                 | Source                                             |
 | ---------------------------------------------------- | -------------------------------------------------- |
@@ -74,7 +74,7 @@ What changed during the copy:
 
 Stories use invented data in `src/charts/fixtures.js`; none of it comes from the source app.
 
-## Licensing — resolve before using this outside CortexAI
+## Licensing — resolve before using this outside the source app
 
 - **Highcharts** needs a commercial licence for commercial use. Four of the five charts depend on it. Check that
   your licence covers every project that will use this library. If it doesn't, move those charts to Recharts, which
@@ -102,4 +102,4 @@ Stories use invented data in `src/charts/fixtures.js`; none of it comes from the
 4. Build new generic components modelled on the dashboard-specific charts: this-year / last-year / forecast
    comparison with hatched bars, treemap, bubble chart, sankey, and tooltip parts.
 5. Write docs: one MDX page per chart (when to use it, data shape, props, examples, theming), plus the chart spec.
-6. Publish to a private registry, and optionally switch cortexaife to use this package.
+6. Publish to a private registry, and optionally switch the source app to use this package.

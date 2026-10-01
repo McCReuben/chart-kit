@@ -457,7 +457,7 @@ Paths are relative to the source app's `src/`.
   Title (12px/700, mb 4), Row (flex, gap 6, "label: value"), Marker variants circle (12px, white 2px border),
   square (14px), dash (14px dashed 2px), hatch (14px repeating-linear-gradient 45deg). Core's tooltip parts should
   offer this "inverse" look as a variant beside the default (theme surface) look.
-- **Treemap** (`components/ebayLiveWbr/MarketShareChart.jsx`, `components/marketingWbr/PaidMkPerfChart.jsx`,
+- **Treemap** (`components/liveWbr/MarketShareChart.jsx`, `components/marketingWbr/PaidMkPerfChart.jsx`,
   Highcharts treemap): flat, or **grouped two-level** (group headers 11px/700 in text.primary; groups laid out
   slice-and-dice, leaves squarified). 1px borders (#000 on leaves; groups #bbb light / #666 dark). Colour by
   **status/threshold** (for example >=+2% green, -2..+2 grey #bfbfbf, -8..-2 brown, < -8 red; or a two-signal
