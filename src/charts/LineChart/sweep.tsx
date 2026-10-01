@@ -3,7 +3,7 @@ import { usePlotArea } from 'recharts';
 
 import { useLatestRef } from '../../core';
 
-/** Duration of the left-to-right sweep in ms (as in the original). */
+/** Duration of the left-to-right sweep in ms. */
 export const SWEEP_DURATION = 1400;
 
 /** Extra room around the plot area inside the clip, so thick lines and markers at the edges are not cut. */

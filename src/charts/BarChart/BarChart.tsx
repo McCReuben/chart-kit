@@ -52,17 +52,17 @@ export type { BarTooltipContext, BarTooltipPoint } from './BarTooltip';
 /** One bar series. */
 export type BarSeries = SeriesInput;
 
-/** What `onPointClick` receives about the clicked bar (replaces the original's point object). */
+/** What `onPointClick` receives about the clicked bar. */
 export interface BarPointClick<S extends SeriesInput = BarSeries> {
     /** Series name. */
     seriesName: string;
     /** Position of the series in `series`. */
     seriesIndex: number;
-    /** Raw category value (original `point.category`). */
+    /** Raw category value. */
     category: string | number;
-    /** Category index (original `point.index`). */
+    /** Category index. */
     index: number;
-    /** Bar value (original `point.y`). */
+    /** Bar value. */
     value: number | null;
     /** Resolved bar colour. */
     color: string;
@@ -79,7 +79,7 @@ export interface BarChartProps<S extends BarSeries = BarSeries> {
     /**
      * `'grouped'`: side-by-side columns. `'stacked'`: columns stacked in series order (first series at the bottom),
      * wider bars (max 48 px) with rounded stack tops. `'horizontal'`: grouped horizontal bars. Default `'grouped'`.
-     */
+    */
     mode?: BarChartMode;
     /** Total height in px, legend included. Default 320. */
     height?: number;
@@ -92,9 +92,9 @@ export interface BarChartProps<S extends BarSeries = BarSeries> {
     /** Category-axis label formatter, e.g. `retailWeekFormatter(2026)`. Default `String(value)`. */
     xAxisLabelFormatter?: (value: string | number, index: number) => string;
     /**
-     * Rotate category labels by -45°. Default: rotated for vertical columns unless a category looks like `2026 Q1`
-     * (the original's rule); never for horizontal bars.
-     */
+     * Rotate category labels by -45°. Default: rotated for vertical columns unless a category looks like `2026 Q1`;
+     * never for horizontal bars.
+    */
     rotateXAxisLabels?: boolean;
     /** Show the legend below the plot. Default `false`. */
     showLegend?: boolean;
@@ -106,9 +106,8 @@ export interface BarChartProps<S extends BarSeries = BarSeries> {
     tooltipShared?: boolean;
     /**
      * Custom tooltip body, rendered inside the standard tooltip box (which keeps the away-from-cursor placement).
-     * Replaces the original's `tooltipHtmlFormatter(this)` HTML string: read `context.points` instead of
-     * `this.points`, `context.category`/`context.header` instead of `this.x`, and return JSX instead of HTML.
-     */
+     * `context` holds the hovered category, the formatted header, the visible points and (stacked) the stack total.
+    */
     renderTooltip?: (context: BarTooltipContext<S>) => ReactNode;
     /** Show the tooltip at this category index without hovering (static docs and screenshots). */
     defaultTooltipIndex?: number;
@@ -122,9 +121,9 @@ export interface BarChartProps<S extends BarSeries = BarSeries> {
     dataLabelFormatter?: (value: number) => string;
     /** Stacked mode: show each stack's total above it (formatted with `yAxisFormatter`). Default `false`. */
     showStackTotals?: boolean;
-    /** Gap between legend items in px (original `legend.itemDistance`). Default 16. */
+    /** Gap between legend items in px Default 16. */
     legendItemDistance?: number;
-    /** Space between the plot and the legend in px (original `legend.margin`). Default 12. */
+    /** Space between the plot and the legend in px Default 12. */
     legendMargin?: number;
     /** Background colour; default `theme.componentBackground`. `'transparent'` is allowed. */
     backgroundColor?: string;
@@ -139,7 +138,7 @@ export interface BarChartProps<S extends BarSeries = BarSeries> {
 const BAR_RADIUS = 3;
 const VERTICAL_RADIUS: [number, number, number, number] = [BAR_RADIUS, BAR_RADIUS, 0, 0];
 const HORIZONTAL_RADIUS: [number, number, number, number] = [0, BAR_RADIUS, BAR_RADIUS, 0];
-/** Extra top space for stack totals (the original's `spacingTop` 28 instead of 10). */
+/** Extra top space for stack totals (28px of spacing instead of 10). */
 const STACK_TOTAL_SPACE = 18;
 
 /** Generic, theme-aware bar chart: grouped, stacked or horizontal bars with legend, tooltip and data labels. */
@@ -215,7 +214,7 @@ export function BarChart<S extends BarSeries = BarSeries>({
     const hover = useSeriesHover();
     const visibleKeys = resolved.filter((s) => !visibility.isHidden(s.key)).map((s) => s.key);
 
-    // Plot length along the value axis, for original-like tick spacing (72 px).
+    // Plot length along the value axis, for one tick about every 72 px.
     const [plot, setPlot] = useState<{ width: number; height: number } | null>(null);
     const onPlotArea = useCallback((a: PlotArea) => setPlot({ width: a.width, height: a.height }), []);
     const pixelLength = plot ? (horizontal ? plot.width : plot.height) : horizontal ? 600 : height * 0.6;
@@ -282,7 +281,7 @@ export function BarChart<S extends BarSeries = BarSeries>({
                 animationDuration={1000}
                 animationEasing="ease-out"
                 style={style}
-                // Original `states.hover.brightness: -0.05` on the hovered category.
+                // Darken the hovered category's bars by 5%.
                 activeBar={{ style: { ...style, filter: 'brightness(0.95)' } }}
                 {...hover.bindItem(s.key)}
                 onClick={onPointClick ? (d) => pointClick(s, d?.payload as ChartRow | undefined) : undefined}

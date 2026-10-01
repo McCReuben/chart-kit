@@ -79,7 +79,7 @@ describe('line style helpers', () => {
         expect(dashArrayFor('Dot', 1)).toBe('1 3');
     });
 
-    it('formats axis numbers like the original defaults', () => {
+    it('formats axis numbers with compact suffixes', () => {
         expect(defaultAxisNumber(40, 5)).toBe('40');
         expect(defaultAxisNumber(40000, 10000)).toBe('40k');
         expect(defaultAxisNumber(2500000, 500000)).toBe('2 500k');

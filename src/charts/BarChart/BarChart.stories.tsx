@@ -161,7 +161,7 @@ export const TransparentBackground: Story = {
     ],
 };
 
-/** Shared tooltip shown without hovering, placed away from the bars like the original. */
+/** Shared tooltip shown without hovering, placed beside the bars, away from the cursor. */
 export const StaticTooltip: Story = {
     args: { showLegend: true, defaultTooltipIndex: 1 },
 };
@@ -176,7 +176,7 @@ export const PerSeriesTooltip: Story = {
     args: { tooltipShared: false, showLegend: true },
 };
 
-/** `renderTooltip` render prop (replaces the original's `tooltipHtmlFormatter`), with the stack total. */
+/** `renderTooltip` render prop for a custom tooltip body, with the stack total. */
 export const CustomTooltip: Story = {
     args: {
         ...Stacked.args,

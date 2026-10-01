@@ -42,18 +42,10 @@ export interface DualAxisSeries extends SeriesInput {
     data: Array<number | null>;
     /** Colour; default `theme.palette[i]`. */
     color?: string;
-    /**
-     * Mark type: `'spline'` (default, a smooth line with white-filled circle markers) or `'column'`.
-     * The original's `'line'` and `'bar'` are accepted as aliases of `'spline'` and `'column'`.
-     */
-    type?: DualAxisSeriesType | 'line' | 'bar';
-    /** @deprecated The original's name for `type` (`'line'` | `'column'` | `'bar'`). Used when `type` is not set. */
-    seriesType?: 'line' | 'spline' | 'column' | 'bar';
-    /**
-     * Value axis: `'left'` (primary, default) or `'right'` (secondary). The original's numeric `0` (left) and `1`
-     * (right) are still accepted.
-     */
-    axis?: DualAxisSide | 0 | 1;
+    /** Mark type: `'spline'` (default, a smooth line with white-filled circle markers) or `'column'`. */
+    type?: DualAxisSeriesType;
+    /** Value axis: `'left'` (primary, default) or `'right'` (secondary). */
+    axis?: DualAxisSide;
     /** Line dash style; `'Dash'` draws a dashed line without markers. Ignored for columns. Default `'Solid'`. */
     dashStyle?: 'Solid' | 'Dash' | 'dash';
     /** Line width in px (default 2). Ignored for columns. */
@@ -103,13 +95,12 @@ const RIGHT = 'right';
 
 /** Normalised series type: `'column'` or `'spline'`. */
 export function seriesKind(s: DualAxisSeries): DualAxisSeriesType {
-    const t = s.type ?? s.seriesType;
-    return t === 'column' || t === 'bar' ? 'column' : 'spline';
+    return s.type === 'column' ? 'column' : 'spline';
 }
 
-/** Normalised axis side: `'right'` for `'right'` or `1`, else `'left'`. */
+/** Normalised axis side: `'right'` or `'left'` (default). */
 export function seriesSide(s: DualAxisSeries): DualAxisSide {
-    return s.axis === 1 || s.axis === 'right' ? RIGHT : LEFT;
+    return s.axis === 'right' ? RIGHT : LEFT;
 }
 
 function isDashed(s: DualAxisSeries): boolean {
@@ -122,7 +113,7 @@ const MARKER_FILL = '#FFFFFF';
 /**
  * Columns and splines against a left (primary) and a right (secondary) value axis, so metrics with very different
  * magnitudes or units read clearly on one chart. Each axis gets its own nice scale from its visible series, with
- * aligned tick counts so the grid lines coincide (as in the original). Shared tooltip with a dotted crosshair, legend
+ * aligned tick counts so the grid lines coincide. Shared tooltip with a dotted crosshair, legend
  * with toggling, and hover dimming.
  */
 export function DualAxisChart({
@@ -168,7 +159,7 @@ export function DualAxisChart({
     const visibility = useSeriesVisibility(keys, names);
     const hover = useSeriesHover();
 
-    // Plot height drives the tick density (72px per tick, as the original); estimated until measured.
+    // Plot height drives the tick density (72px per tick); estimated until measured.
     const [plotHeight, setPlotHeight] = useState<number | null>(null);
     const plotLen = plotHeight ?? Math.round(height * 0.6);
 
@@ -189,7 +180,7 @@ export function DualAxisChart({
         } as { leftScale?: NiceScale; rightScale?: NiceScale };
     }, [resolved, rows, visibility.hidden, plotLen]);
 
-    // The original groups the visible columns: groupPadding 0.2, pointPadding 0.1 (percentages of the category band).
+    // Visible columns are grouped: groupPadding 0.2, pointPadding 0.1 (percentages of the category band).
     const columnCount = resolved.filter((s) => seriesKind(s.input) === 'column' && !visibility.hidden.has(s.key)).length;
     const n = Math.max(1, columnCount);
     const barCategoryGap = `${20 + 6 / n}%`;

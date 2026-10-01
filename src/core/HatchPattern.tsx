@@ -49,7 +49,7 @@ export interface PlotAreaProbeProps {
 
 /**
  * Render inside a Recharts chart to learn the plot area size in the parent, e.g. to feed
- * `niceScale(min, max, { pixelLength: plot.height })` for original-style tick density. Reports only when a value
+ * `niceScale(min, max, { pixelLength: plot.height })` for one tick about every 72px. Reports only when a value
  * changes by at least 1px (rounded). Keep everything derived from it referentially stable (`niceScale` is cached).
  */
 export function PlotAreaProbe({ onChange }: PlotAreaProbeProps) {

@@ -5,8 +5,7 @@ import { ResolvedChartThemeProvider, useChartTheme } from '../theme/ChartThemePr
 import type { ChartTheme } from '../theme/types';
 
 /**
- * Outer spacing of the frame in px, as the originals' default `chart.spacing` `[10, 10, 15, 10]`
- * (top, right, bottom, left).
+ * Outer spacing of the frame in px, `[10, 10, 15, 10]` (top, right, bottom, left).
  */
 export const CHART_SPACING = { top: 10, right: 10, bottom: 15, left: 10 } as const;
 
@@ -18,7 +17,7 @@ export const CHART_MARGIN = { top: 6, right: 4, bottom: 0, left: 4 } as const;
 
 /** Props of {@link ChartFrame}. */
 export interface ChartFrameProps {
-    /** Total height in px, legend included (as the originals' `chart.height`). */
+    /** Total height in px, legend included. */
     height: number;
     /** Resolved theme (usually `useChartTheme(props.theme)`); handed down to all core parts inside. Default: context theme. */
     theme?: ChartTheme;
@@ -39,9 +38,9 @@ export interface ChartFrameProps {
 }
 
 /**
- * Chart container that recreates the originals' frame: fixed height, theme background and font, original-style
- * outer spacing, `position: relative` for overlays, and the legend below the plot. It also provides the resolved
- * theme to everything inside (ticks, tooltip, legend, reset-zoom button).
+ * Chart container: fixed height, theme background and font, outer spacing ({@link CHART_SPACING}),
+ * `position: relative` for overlays, and the legend below the plot. It also provides the resolved theme
+ * to everything inside (ticks, tooltip, legend, reset-zoom button).
  */
 export function ChartFrame({
     height,

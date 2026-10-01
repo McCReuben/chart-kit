@@ -1,5 +1,4 @@
-// Public entry point for the chart-kit library. The frozen Highcharts originals
-// live in src/originals/ for Storybook comparison only and are never exported.
+// Public entry point for the chart-kit library.
 
 // Theme
 export { ChartThemeProvider, DARK_PALETTE, LIGHT_PALETTE, darkTheme, lightTheme, mergeTheme, useChartTheme } from './theme';

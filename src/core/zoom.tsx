@@ -4,7 +4,7 @@ import { ReferenceArea, ZIndexLayer, usePlotArea, type MouseHandlerDataParam } f
 import { useChartTheme } from '../theme/ChartThemeProvider';
 import type { ChartTheme } from '../theme/types';
 
-/** Minimum drag distance in px before a drag becomes a zoom (the originals need about 10px). */
+/** Minimum drag distance in px before a drag becomes a zoom. */
 export const MIN_ZOOM_DRAG_PX = 10;
 
 /** An inclusive range of original category indices. */
@@ -54,7 +54,7 @@ export interface XZoom {
     /**
      * `true` once right after a drag-zoom ends, so a chart can ignore the click event that follows mouse-up
      * (e.g. `onPointClick`). Reading it clears it.
-     */
+    */
     consumeDragClick: () => boolean;
 }
 
@@ -66,7 +66,7 @@ function toIndex(state: MouseHandlerDataParam | undefined): number | null {
 }
 
 /**
- * Drag-to-zoom on a category x axis (the originals' `zoomType: 'x'`). Mouse down, drag at least `minDragPx`, release:
+ * Drag-to-zoom on a category x axis. Mouse down, drag at least `minDragPx`, release:
  * the chart shows only the selected categories (slice the rows with `sliceRows`, which works for bars too).
  * Clicks and tiny drags are ignored. The selection is committed on mouse-up anywhere in the window. The zoom resets
  * when `resetKey` or `length` changes. Draw the selection with {@link ZoomSelection} and offer
@@ -176,7 +176,7 @@ export interface ZoomSelectionProps {
     /**
      * Maps an original category index to the x-axis value. Default: the index itself, which is right when the
      * category axis `dataKey` is `'index'` (the `categoryAxisProps` default).
-     */
+    */
     toAxisValue?: (index: number) => unknown;
     /** Fill; default `theme.selectionFill`. */
     fill?: string;
@@ -220,7 +220,7 @@ export interface ResetZoomButtonProps {
 }
 
 /**
- * The originals' `resetZoomButton`, drawn in SVG inside the chart: top-right of the plot area (x -10, y 10), fill =
+ * "Reset zoom" button, drawn in SVG inside the chart: top-right of the plot area (x -10, y 10), fill =
  * chart background, 1px `componentBorder` stroke, radius 6, 11px `text.primary`, hover fill `componentBorder`,
  * pointer cursor, keyboard-accessible. Render inside the chart: `<ResetZoomButton visible={zoom.isZoomed} onClick={zoom.reset} />`.
  */

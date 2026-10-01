@@ -9,7 +9,7 @@ import {
 
 import type { ChartRow } from '../../core';
 
-/** Travel time from the first point to the hovered one, in ms (as in the original). */
+/** Travel time from the first point to the hovered one, in ms. */
 const TRAVEL_MS = 1000;
 /** Minimum time per step, in ms. */
 const MIN_STEP_MS = 12;
@@ -125,7 +125,7 @@ export function HoverTrail({ rows, series, hovered }: HoverTrailProps) {
                 >
                     {pulsing ? (
                         <>
-                            {/* 900ms ease-out growth, then 100ms pause, repeated (the original's pulse). */}
+                            {/* 900ms ease-out growth, then 100ms pause, repeated (a pulse). */}
                             <animate
                                 attributeName="r"
                                 values="5;16;5"

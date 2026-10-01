@@ -1,10 +1,11 @@
 # chart-kit
 
-Reusable, theme-aware React chart components, extracted from the source app's frontend.
+Reusable, theme-aware React chart components built on [Recharts](https://recharts.org).
 
-> **Status: phase 2 of 6. The charts were copied without changes.** The components are the originals with only their
-> import paths updated. They still depend on the source app's theme context and retail-week formatter. Phase 3
-> removes those dependencies. See [Roadmap](#roadmap).
+- Six ready-made charts plus the core building blocks (axes, tooltips, legend, zoom, hover) to build new ones.
+- Light and dark themes with per-chart overrides. A theme provider is optional.
+- Typed props with JSDoc, documented and playable in Storybook.
+- No global CSS. Everything is styled inline from the theme.
 
 ## Getting started
 
@@ -13,93 +14,129 @@ Requires Node ≥ 20.19 (`nvm use` picks up `.nvmrc`).
 ```sh
 npm install
 npm run storybook        # docs + playground at http://localhost:6006
-npm run build            # library build → dist/chart-kit.js + dist/chart-kit.css
-npm run build-storybook  # static docs site → storybook-static/
+npm run build            # library build → dist/chart-kit.js + dist/types
 ```
 
-Use the Storybook toolbar's **Theme** control to switch between light and dark.
+Peer dependencies: `react` and `react-dom` 19, `recharts` 3.
+
+## Usage
+
+```tsx
+import { ChartThemeProvider, LineChart, numberFormatter } from 'chart-kit';
+
+<ChartThemeProvider mode="system">
+    <LineChart
+        categories={['Jan', 'Feb', 'Mar']}
+        series={[
+            { name: 'This year', data: [42.1, 43.8, 41.5] },
+            { name: 'Last year', data: [39.4, 40.2, 40.9], dashStyle: 'Dash' },
+        ]}
+        yAxisFormatter={numberFormatter({ prefix: '$', suffix: 'M' })}
+        showLegend
+    />
+</ChartThemeProvider>;
+```
+
+The series charts take `series: [{ name, data, color? }]` with `data` aligned to `categories`, and `null` for a gap
+(`WaterfallChart` takes `data` rows instead). Colours default to the theme palette. Formatters can be inline functions; a new function identity never re-renders or
+re-animates a chart.
 
 ## Components
 
-| Export              | Library    | What it draws                                                                                               |
-| ------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
-| `LineChart`         | Highcharts | Smooth lines, x-zoom, hover dimming, optional sweep animation (`animateKey`) and hover trail (`sparkPoint`) |
-| `BarChart`          | Highcharts | `mode`: `grouped`, `stacked` or `horizontal`; stack totals, data labels, point and legend click handlers    |
-| `ComboBarLineChart` | Highcharts | Columns plus a line on shared axes (`type: 'column' \| 'spline'` per series)                                |
-| `DualAxisChart`     | Highcharts | Left and right value axes (`axis: 0 \| 1`), each series a line or a column                                  |
-| `WaterfallChart`    | Recharts   | Waterfall / walk chart from pre-positioned `{ name, offset, delta, color }` rows                            |
-| `ChartSegment`      | (above)    | Renders a JSON chart spec (`line`, `dual-axis`, `grouped-bar`, `stacked-bar`, `horizontal-bar`)             |
+| Export              | What it draws                                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `LineChart`         | Smooth lines with x-zoom, hover dimming, dash styles, optional sweep-in animation (`animateKey`) and `hoverTrail`     |
+| `BarChart`          | `mode`: `grouped`, `stacked` or `horizontal`; stack totals, data labels, point/legend click handlers, `renderTooltip` |
+| `ComboBarLineChart` | Columns plus smooth lines on one shared value axis (`type: 'column' \| 'spline'` per series)                          |
+| `DualAxisChart`     | Left and right value axes with aligned grid lines (`axis: 'left' \| 'right'`, `type: 'spline' \| 'column'`)           |
+| `WaterfallChart`    | Waterfall / bridge chart; build its rows with `toWaterfallRows(start, steps, end)`                                    |
+| `ChartSegment`      | Renders a JSON `ChartSpec` (`line`, `dual-axis`, `grouped-bar`, `stacked-bar`, `horizontal-bar`) as a titled card     |
 
-Every chart must be rendered inside `ThemeProvider`:
+Common props: `height`, `xAxisLabelFormatter`, `yAxisFormatter`, `tooltipValueFormatter`, `tooltipHeaderFormatter`,
+`backgroundColor` (`'transparent'` is allowed), `theme` (per-chart overrides), `className`, `ariaLabel` and
+`defaultTooltipIndex` (show the tooltip without hovering). The series charts also take `showLegend`. See each chart's
+Storybook page for the full prop list.
 
-```jsx
-import { LineChart, ThemeProvider } from 'chart-kit';
-import 'chart-kit/style.css';
+### Chart specs
 
-<ThemeProvider>
-    <LineChart
-        categories={['2026 RW01', '2026 RW02', '2026 RW03']}
-        series={[{ name: 'Revenue', data: [42.1, 43.8, 41.5], color: '#0064D2' }]}
-        yAxisFormatter={(v) => `$${v}M`}
-    />
-</ThemeProvider>;
+`ChartSegment` draws a chart from data, which suits charts produced by a backend or an LLM:
+
+```tsx
+<ChartSegment
+    spec={{
+        type: 'dual-axis',
+        x: ['Jan', 'Feb', 'Mar'],
+        data: [
+            { revenue: 42.1, conversion: 2.8 },
+            { revenue: 43.8, conversion: 2.9 },
+            { revenue: 41.5, conversion: 2.7 },
+        ],
+        series: [
+            { key: 'revenue', label: 'Revenue ($M)', seriesType: 'column' },
+            { key: 'conversion', label: 'Conversion (%)', axis: 'right' },
+        ],
+        layout: { title: 'Revenue vs conversion', yLabel: 'Revenue ($M)', y2Label: 'Conversion (%)' },
+    }}
+/>
 ```
 
-Peer dependencies: `react`, `react-dom`, `highcharts`, `highcharts-react-official`, `recharts`. The charts inherit
-their font from the page (the source app sets Poppins globally), so the host app supplies the font.
+An unknown `type` or an empty `series` renders nothing. `planChartSegment(spec)` returns the resolved chart plan
+without rendering it, and `hasChartSegment(message)` checks a message's `segments` for a `{ type: 'chart' }` entry.
 
-## Where each file came from
+## Theming
 
-Paths are relative to the source app's `src/`.
+Charts read their theme from the nearest `ChartThemeProvider`, or use `lightTheme` when there is none.
 
-| Here                                                 | Source                                             |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| `src/charts/LineChart/LineChart.{jsx,css}`           | `components/common/LineChart.{jsx,css}`            |
-| `src/charts/BarChart/BarChart.jsx`                   | `components/common/BarChart.jsx`                   |
-| `src/charts/ComboBarLineChart/ComboBarLineChart.jsx` | `components/common/ComboBarLineChart.jsx`          |
-| `src/charts/DualAxisChart/DualAxisChart.jsx`         | `components/common/DualAxisChart.jsx`              |
-| `src/charts/WaterfallChart/WaterfallChart.jsx`       | `components/common/WaterfallChart.jsx`             |
-| `src/spec/ChartSegment.jsx`                          | `pages/chatbot/components/ChartSegment.jsx`        |
-| `src/spec/ChartSegment.css`                          | rules from `pages/chatbot/styles/report-frame.css` |
-| `src/theme/ThemeContext.jsx`                         | `context/ThemeContext.jsx` (temporary stand-in)    |
-| `src/core/formatRetailWeek.js`                       | `utils/formatRetailWeek.js`                        |
+```tsx
+<ChartThemeProvider mode="dark" theme={{ palette: ['#3987e5', '#e5a539'], fontFamily: 'Inter, sans-serif' }}>
+    …
+    <BarChart theme={{ gridLine: 'transparent' }} … />  {/* per-chart override */}
+</ChartThemeProvider>
+```
 
-What changed during the copy:
+- `mode`: `'light'`, `'dark'` or `'system'` (follows `prefers-color-scheme` live, SSR-safe). Nested providers inherit
+  the mode and deep-merge their overrides.
+- Tokens: background and border colours, `text.{primary,secondary}`, `axisLabel`, `gridLine`, `crosshair`,
+  `positive`/`negative`/`neutral`, `fontFamily` (default `inherit`, so charts use the page font), `fontSize.*`,
+  `tooltipInverse.*` and the series `palette`. See `ChartTheme` in [src/theme/types.ts](src/theme/types.ts).
+- `lightTheme`, `darkTheme`, `mergeTheme(base, ...overrides)` and `useChartTheme(overrides?)` are exported for custom
+  charts.
 
-- Import paths were updated for the new folder layout.
-- `ChartSegment` now imports its own `ChartSegment.css`. The original rules were nested under `.chatbot-page` and read
-  the chatbot's CSS variables. The copies drop that parent selector and use the chatbot's light and dark values as
-  fallbacks.
-- No component logic, props or styling was changed.
+## Formatters
 
-Stories use invented data in `src/charts/fixtures.js`; none of it comes from the source app.
+`formatNumber`, `formatCurrency` and `formatPercent` take `(value, { locale, decimals, compact, signDisplay, prefix,
+suffix, … })`. `numberFormatter`, `currencyFormatter` and `percentFormatter` return ready-made formatter functions
+for chart props. `retailWeekFormatter(year?)` formats retail-week categories (`'2026 W5'` → `'2026 RW05'`).
 
-## Licensing — resolve before using this outside the source app
+## Building your own chart
 
-- **Highcharts** needs a commercial licence for commercial use. Four of the five charts depend on it. Check that
-  your licence covers every project that will use this library. If it doesn't, move those charts to Recharts, which
-  `WaterfallChart` already uses.
-- **Code ownership.** This code came from a client codebase. Confirm you're allowed to reuse it before publishing the
-  package anywhere.
+The core building blocks are exported too: axis and grid prop factories (`categoryAxisProps`, `valueAxisProps`,
+`gridProps`), `niceScale`, `ChartFrame`, `ChartLegend`, `SharedTooltipContent` and the tooltip parts,
+`useSeriesHover`, `useSeriesVisibility`, `useXZoom` with `ZoomSelection`/`ResetZoomButton`, `HatchPattern`, data
+helpers and stable-props hooks. The **Core/Building blocks** stories show each one, and
+[docs/architecture.md](docs/architecture.md) has the full API and a chart skeleton.
 
-## Roadmap
+## Development
 
-1. ~~Set up the repo (Vite library build and Storybook).~~
-2. ~~Copy the charts without changes; add stories with synthetic data.~~
-3. **Remove dependencies on the source app** (one commit each, checking the stories still look the same):
-    - Replace the app's `ThemeContext` with a chart theme that has defaults, so no provider is required. The charts
-      only read `componentBackground`, `componentBorder`, `surface`, `border`, `text.primary`, `text.secondary` and
-      `isDarkMode`.
-    - Make `formatRetailWeek` an optional formatter instead of the default for x-axis labels and tooltips.
-    - Turn the hardcoded `#707070` axis colour and the `var(--Family-Primary, "Market Sans")` font into theme values.
-    - Rename `LineChart`'s `sparkPoint` (commented as "Services360 only") to a generic name, and give the
-      `.line-chart--hovered` CSS class its own namespace.
-    - Use LineChart's content-keyed memoisation and ref-held formatters in the other charts too. Right now they
-      rebuild their options whenever a caller passes inline formatter functions.
-    - Move the repeated legend, tooltip, crosshair and zoom-button settings into a shared `baseOptions(theme)`.
-    - Add a `toWaterfallRows(start, steps, end)` helper (see `fixtures.js` for a working version).
-    - Remove the unused `React` import in `WaterfallChart` (Vite warns about it).
-4. Build new generic components modelled on the dashboard-specific charts: this-year / last-year / forecast
-   comparison with hatched bars, treemap, bubble chart, sankey, and tooltip parts.
-5. Write docs: one MDX page per chart (when to use it, data shape, props, examples, theming), plus the chart spec.
-6. Publish to a private registry, and optionally switch the source app to use this package.
+| Script                    | What it does                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `npm run storybook`       | Storybook dev server; the toolbar's **Theme** control switches light/dark       |
+| `npm test`                | Vitest unit tests                                                               |
+| `npm run typecheck`       | `tsc` over `src/`                                                               |
+| `npm run build`           | Library build (ES module) and type declarations into `dist/`                    |
+| `npm run build-storybook` | Static Storybook into `storybook-static/`                                       |
+| `npm run verify`          | typecheck, tests, build and Storybook build                                     |
+| `npm run screenshots`     | Screenshots every story in both themes (needs `build-storybook` and Playwright) |
+
+Layout:
+
+```
+src/
+  theme/          ChartThemeProvider, built-in themes, ChartTheme types
+  core/           shared building blocks (axes, tooltip, legend, zoom, hover, formatters, hooks)
+  charts/<Name>/  one folder per chart: component, helpers, stories, tests
+  spec/           ChartSegment and the ChartSpec format
+  index.ts        public entry point
+```
+
+Story data in `src/charts/fixtures.js` is invented.

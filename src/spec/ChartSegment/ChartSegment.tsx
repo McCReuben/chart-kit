@@ -19,16 +19,13 @@ export interface ChartSegmentProps {
     /**
      * Declarative chart spec (from a backend or an LLM). Renders nothing (`null`) when it is not an object, has an
      * unknown `type`, or has no series. Series without a `color` use the theme palette.
-     */
+    */
     spec: ChartSpec | null | undefined;
     /** Per-instance theme overrides, merged over the context theme and passed on to the chart. */
     theme?: ChartThemeOverrides;
     /** Class name on the card. Use it (or `style`) for spacing between segments, e.g. `:first-child` margins. */
     className?: string;
-    /**
-     * Inline styles merged over the card's defaults (`margin: 14px 0`, `padding: 12`, 1px border, radius 8).
-     * Replaces the original's `:first-child`/`:last-child` margin rules, which inline styles cannot express.
-     */
+    /** Inline styles merged over the card's defaults (`margin: 14px 0`, `padding: 12`, 1px border, radius 8). */
     style?: CSSProperties;
     /** Accessible name of the chart. Default: the spec title. */
     ariaLabel?: string;
@@ -71,7 +68,7 @@ export function ChartSegment({ spec, theme: themeOverrides, className, style, ar
                     color: s.color,
                     dashStyle: s.dashed ? 'Dash' : 'Solid',
                     axis: s.axis,
-                    seriesType: s.seriesType,
+                    type: s.seriesType === 'column' ? 'column' : 'spline',
                 }))}
                 yAxisTitle={plan.yLabel ?? null}
                 y2AxisTitle={plan.y2Label ?? null}

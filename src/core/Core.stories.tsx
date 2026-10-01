@@ -164,7 +164,7 @@ function DemoLineChart({
     const { sliceRows } = zoom;
     const rows = useMemo(() => sliceRows(allRows), [sliceRows, allRows]);
     const [active, setActive] = useState<number | null>(staticTooltipIndex !== undefined ? rows[staticTooltipIndex]?.index ?? null : null);
-    // 4. Highcharts-like y ticks from the plot height.
+    // 4. Nice y ticks from the plot height.
     const [plot, setPlot] = useState<PlotArea | undefined>();
     const extent = seriesExtent(
         rows,

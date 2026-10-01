@@ -3,7 +3,7 @@ import type { ChartRow } from '../../core';
 /** Layout mode of {@link BarChart}. */
 export type BarChartMode = 'grouped' | 'stacked' | 'horizontal';
 
-/** Original column paddings (`groupPadding`, `pointPadding`) per mode, as the original sets them. */
+/** Column paddings per mode: `group` and `point` are shares of the category band and of each bar slot. */
 const PADDING: Record<BarChartMode, { group: number; point: number; maxBarSize?: number }> = {
     grouped: { group: 0.2, point: 0.1 },
     horizontal: { group: 0.2, point: 0.1 },
@@ -11,8 +11,8 @@ const PADDING: Record<BarChartMode, { group: number; point: number; maxBarSize?:
 };
 
 /**
- * Converts the original's `groupPadding`/`pointPadding` to Recharts' `barCategoryGap`/`barGap` (both a share of the band).
- * Original: group = band * (1 - 2 * groupPadding), slot = group / n, bar = slot * (1 - 2 * pointPadding).
+ * Converts group/point paddings to Recharts' `barCategoryGap`/`barGap` (both a share of the band).
+ * Paddings: group = band * (1 - 2 * groupPadding), slot = group / n, bar = slot * (1 - 2 * pointPadding).
  * Recharts: bars sit between two `barCategoryGap` offsets with `barGap` between neighbours.
  */
 export function barGaps(mode: BarChartMode, visibleSeries: number): { barCategoryGap: string; barGap: string; maxBarSize?: number } {
@@ -27,7 +27,7 @@ function num(v: unknown): number | null {
     return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
-/** Sum of the values in `row` that share the sign of `sign` (the original keeps positive and negative stacks apart). */
+/** Sum of the values in `row` that share the sign of `sign` (positive and negative stacks are kept apart). */
 export function stackTotal(row: ChartRow, keys: ReadonlyArray<string>, sign: 1 | -1 = 1): number {
     let total = 0;
     for (const k of keys) {
@@ -38,7 +38,7 @@ export function stackTotal(row: ChartRow, keys: ReadonlyArray<string>, sign: 1 |
     return total;
 }
 
-/** The original's `point.percentage` for a stacked point: its share (0-100) of its own-sign stack. */
+/** Percentage of a stacked point: its share (0-100) of its own-sign stack. */
 export function stackPercentage(row: ChartRow, keys: ReadonlyArray<string>, key: string): number | null {
     const v = num(row[key]);
     if (v === null) return null;
@@ -46,7 +46,7 @@ export function stackPercentage(row: ChartRow, keys: ReadonlyArray<string>, key:
     return total === 0 ? null : (v / total) * 100;
 }
 
-/** Value where the segment of `key` ends in its own-sign stack (the original's `plotY` of a stacked point). */
+/** Value where the segment of `key` ends in its own-sign stack. */
 export function stackEnd(row: ChartRow, keys: ReadonlyArray<string>, key: string): number | null {
     const v = num(row[key]);
     if (v === null) return null;
@@ -70,7 +70,7 @@ export function topOfStack(row: ChartRow, keys: ReadonlyArray<string>): string |
 }
 
 /**
- * Data-label text rule of the original: nothing for null/zero, and in stacked mode nothing for a segment under 4% of
+ * Data-label text rule: nothing for null/zero, and in stacked mode nothing for a segment under 4% of
  * its stack.
  */
 export function dataLabelText(
@@ -88,7 +88,7 @@ export function dataLabelText(
     return format(v);
 }
 
-/** `true` when a category looks like `2026 Q1`; the original then keeps x labels horizontal. */
+/** `true` when a category looks like `2026 Q1`; such labels stay horizontal. */
 export function isQuarterAxis(categories: ReadonlyArray<string | number>): boolean {
     return categories.some((c) => /^\d{4}\s*Q[1-4]$/i.test(String(c)));
 }
@@ -108,7 +108,7 @@ export interface AwayPositionInput {
 }
 
 /**
- * The original's `tooltipAwayFromCursor` positioner: the box goes 8 px (half the assumed 16 px bar) + 20 px gap to
+ * Away-from-cursor tooltip placement: the box goes 8 px (half the assumed 16 px bar) + 20 px gap to
  * the right of the anchor, flips to the left when it would overflow, is vertically centred on the anchor, and is kept
  * 8 px inside the chart.
  */
@@ -117,7 +117,7 @@ export function tooltipAwayFromCursor({ anchorX, anchorY, width, height, chartWi
     y: number;
 } {
     const gap = 20;
-    // The original reads `point.shapeArgs.width`, which is never passed to a positioner, so it is always 16 / 2.
+    // Fixed half-width of an assumed 16 px bar, whatever the real bar width.
     const barHalf = 8;
     let x = anchorX + barHalf + gap;
     if (x + width > chartWidth - 8) x = anchorX - barHalf - width - gap;

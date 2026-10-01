@@ -8,9 +8,9 @@ import {
     type ScaleFunction,
 } from 'recharts';
 
-/** Opacity of non-hovered series while one is hovered (LineChart.css in the originals). */
+/** Opacity of non-hovered series while one is hovered. */
 export const DIM_OPACITY = 0.4;
-/** CSS transition of the dimming (LineChart.css in the originals). */
+/** CSS transition of the dimming. */
 export const DIM_TRANSITION = 'opacity 120ms ease-out';
 
 /** Options of {@link useSeriesHover}. */
@@ -19,7 +19,7 @@ export interface SeriesHoverOptions {
      * Opacity of the other series while one is hovered (default 0.4). Pass a function `(id) => opacity` to dim
      * series differently, or return 1 to keep a series undimmed (for example, only splines fade in a combo chart).
      * The latest function is always used, so an inline function is fine.
-     */
+    */
     dimOpacity?: number | ((id: string) => number);
     /** Initially hovered series (for static demos/tests). */
     initial?: string | null;
@@ -40,7 +40,7 @@ export interface SeriesHover {
     /**
      * Props to spread on a Recharts graphical item (`<Line>`, `<Bar>`, `<Area>`, `<Scatter>`): an inline `style`
      * with the opacity and a 120ms ease-out transition.
-     */
+    */
     dimProps: (id: string) => { style: CSSProperties };
     /** Mouse handlers for items that are hovered directly (bars): `<Bar {...hover.bindItem(key)} />`. */
     bindItem: (id: string) => { onMouseEnter: () => void; onMouseLeave: () => void };
@@ -133,7 +133,7 @@ export function findNearestSeries(
 }
 
 /**
- * Render inside a Recharts chart. Reproduces the originals' hover series with a shared tooltip
+ * Render inside a Recharts chart. Picks the hovered series under a shared tooltip
  * (`findNearestPointBy: 'x'`): at the hovered category, the series whose point is nearest to the pointer is hovered,
  * even when the pointer is not on the thin line. Reports changes through `onChange`; `null` when the tooltip ends
  * (pointer left the plot).

@@ -55,7 +55,7 @@ export interface ChartTextColors {
 
 /**
  * A fully resolved chart theme. Every chart and core building block reads its colours, fonts and sizes from here.
- * The built-in values ({@link lightTheme}, {@link darkTheme}) keep the source application's colour tokens (decision D4).
+ * Start from the built-in {@link lightTheme} or {@link darkTheme} and override tokens with {@link mergeTheme}.
  */
 export interface ChartTheme {
     /** Resolved colour mode. */
@@ -74,7 +74,7 @@ export interface ChartTheme {
     border: string;
     /** Text colours. */
     text: ChartTextColors;
-    /** Axis tick label and x-axis title colour (the originals hardcode `#707070` in both modes). */
+    /** Axis tick label and x-axis title colour (`#707070` in both modes). */
     axisLabel: string;
     /** Horizontal grid line colour. */
     gridLine: string;
@@ -95,7 +95,7 @@ export interface ChartTheme {
     /**
      * Neutral data colour: waterfall totals and bars that are neither an increase nor a decrease. Defaults to the
      * first palette colour of the base theme (`palette[0]`); overriding `palette` does not change it.
-     */
+    */
     neutral: string;
     /** Accent colour for highlighting the hovered category (active tick, reference line). */
     accent: string;

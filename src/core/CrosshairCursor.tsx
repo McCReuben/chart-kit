@@ -4,7 +4,7 @@ export interface CrosshairCursorProps {
     color?: string;
     /** Line width (default 1). (Not `width`: Recharts passes the plot width under that name.) */
     lineWidth?: number;
-    /** Dash pattern (default: the originals' `Dot` style at width 1, `'1 3'`). */
+    /** Dash pattern (default dotted, `'1 3'`). */
     dashArray?: string;
     /** Chart layout; `'vertical'` (horizontal bars) draws a horizontal line. Inferred when omitted. */
     layout?: 'horizontal' | 'vertical';
@@ -25,7 +25,7 @@ export interface CrosshairCursorProps {
 }
 
 /**
- * The originals' crosshair: a 1px dotted line in `theme.crosshair` through the hovered category, for line and bar
+ * Crosshair: a 1px dotted line in `theme.crosshair` through the hovered category, for line and bar
  * charts alike (Recharts' bar-chart band highlight is replaced by the line). Use as
  * `<Tooltip cursor={<CrosshairCursor color={theme.crosshair} />} />` or via `tooltipProps(theme)`.
  */

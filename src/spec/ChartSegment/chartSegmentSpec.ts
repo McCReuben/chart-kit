@@ -67,7 +67,7 @@ export const DEFAULT_HEIGHT = 260;
 export const MIN_HEIGHT = 170;
 export const MAX_HEIGHT = 500;
 
-/** Clamps a spec height to 170–500; a missing value gives 260, a non-numeric one 170 (as in the original). */
+/** Clamps a spec height to 170–500; a missing value gives 260, a non-numeric one 170. */
 export function clampHeight(value: unknown): number {
     const n = Number(value ?? DEFAULT_HEIGHT);
     if (!Number.isFinite(n)) return MIN_HEIGHT;

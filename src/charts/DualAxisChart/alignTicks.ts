@@ -31,7 +31,7 @@ function frozen(min: number, max: number, interval: number, count: number): Nice
 }
 
 /**
- * The original's `alignTicks` behaviour (the original library's default whenever a chart has two y axes): every axis gets its own
+ * Aligned ticks for charts with two value axes: every axis gets its own
  * nice interval, but all axes share the same number of ticks, `ceil(plotHeight / 72) + 1`, so the grid lines of both
  * axes coincide. An axis with too many ticks doubles its interval until it fits; one with too few adds ticks at the
  * top. Results are cached, so equal inputs return the same frozen object (Recharts re-registers an axis whenever its

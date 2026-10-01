@@ -43,7 +43,7 @@ const TOOLTIP_INVERSE: ChartTooltipInverseTokens = {
 
 const FONT_SIZES = { axis: 11, legend: 12, tooltip: 12, dataLabel: 10 };
 
-/** Built-in light theme (source application's light tokens). */
+/** Built-in light theme. */
 export const lightTheme: ChartTheme = {
     mode: 'light',
     isDarkMode: false,
@@ -70,7 +70,7 @@ export const lightTheme: ChartTheme = {
     palette: [...LIGHT_PALETTE],
 };
 
-/** Built-in dark theme (source application's dark tokens). */
+/** Built-in dark theme. */
 export const darkTheme: ChartTheme = {
     mode: 'dark',
     isDarkMode: true,

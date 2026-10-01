@@ -21,7 +21,7 @@ const row: ChartRow = { index: 0, category: 'A', s0: 12, s1: 29, s2: 1, s3: null
 const keys = ['s0', 's1', 's2', 's3'];
 
 describe('barGaps', () => {
-    it('converts the original paddings to Recharts gaps', () => {
+    it('converts group and point paddings to Recharts gaps', () => {
         // 3 series, groupPadding 0.2, pointPadding 0.1: slot = 0.2 of the band.
         expect(barGaps('grouped', 3)).toEqual({ barCategoryGap: '22%', barGap: '4%', maxBarSize: undefined });
         expect(barGaps('stacked', 3)).toEqual({ barCategoryGap: '7.76%', barGap: '3.52%', maxBarSize: 48 });

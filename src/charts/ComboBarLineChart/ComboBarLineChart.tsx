@@ -73,7 +73,7 @@ export interface ComboBarLineChartProps {
     /**
      * Show the tooltip pinned at this category index (of the rendered rows) without hovering. For static display,
      * documentation and screenshots. Default: tooltip only on hover.
-     */
+    */
     defaultTooltipIndex?: number;
     /** Background colour. Default `theme.componentBackground`; `'transparent'` is allowed. */
     backgroundColor?: string;
@@ -85,16 +85,16 @@ export interface ComboBarLineChartProps {
     ariaLabel?: string;
 }
 
-/** The original's default `inactive` opacity, which the original leaves on for splines (columns keep opacity 1). */
+/** Opacity of the other splines while one series is hovered in the legend (columns keep opacity 1). */
 const SPLINE_INACTIVE_OPACITY = 0.2;
-/** Original `groupPadding` and `pointPadding` of the columns. */
+/** Group and point padding of the columns (shares of the band). */
 const GROUP_PADDING = 0.1;
 const POINT_PADDING = 0.05;
 const ANIMATION_MS = 1000;
 
 /**
- * Columns and smooth lines on one shared value axis. Columns keep the original's sizing (group padding 0.1,
- * point padding 0.05) and 3px top radius; splines have no markers except a 5px dot on hover. Shared tooltip with a
+ * Columns and smooth lines on one shared value axis. Columns use group padding 0.1,
+ * point padding 0.05 and a 3px top radius; splines have no markers except a 5px dot on hover. Shared tooltip with a
  * dotted crosshair, drag-to-zoom on x with a "Reset zoom" button, and an optional legend (click toggles, hover dims
  * the other lines).
  */
@@ -141,7 +141,7 @@ export function ComboBarLineChart({
         resolved.map((s) => s.key),
         resolved.map((s) => s.name),
     );
-    // Legend hover sets `inactive` on the other series; only splines fade (the original's columns keep opacity 1).
+    // Legend hover sets `inactive` on the other series; only splines fade (columns keep opacity 1).
     const hover = useSeriesHover({
         dimOpacity: (key) => ((resolved.find((s) => s.key === key)?.input as ComboSeries | undefined)?.type === 'spline' ? SPLINE_INACTIVE_OPACITY : 1),
     });

@@ -8,7 +8,7 @@ import { defaultCategoryFormatter, defaultValueFormatter } from './formatters';
 import { cachedProps, optionsKey } from './propCache';
 import { useUniqueId } from './stable';
 
-/** Look of a tooltip: `'default'` (theme surface, like the originals) or `'inverse'` (always dark). */
+/** Look of a tooltip: `'default'` (theme surface) or `'inverse'` (always dark). */
 export type TooltipVariant = 'default' | 'inverse';
 
 /** Series marker kinds shown in tooltips. */
@@ -56,7 +56,7 @@ export function TooltipFrame({ variant = 'default', theme: themeProp, style, chi
                   lineHeight: `${inv.lineHeight}px`,
               }
             : {
-                  // Originals: 8px label padding + the originals' inner `padding:4px 6px`.
+                  // Frame padding (8px) plus row padding (4px 6px).
                   padding: '12px 14px',
                   borderRadius: 3,
                   background: theme.surface,
@@ -154,7 +154,7 @@ export interface TooltipMarkerProps {
      * `'default'`: square 8×8 r2, circle 8, line 16×2, dashed 14px 2px dashed top, hatch 8×8 SVG pattern.
      * `'inverse'`: circle 12 with a 2px white border, square 14, dashed 14 wide, hatch 14 with a 1px colour border and a
      * 45° striped gradient; line 16×2.
-     */
+    */
     look?: TooltipVariant;
     /** Extra styles. */
     style?: CSSProperties;
@@ -239,9 +239,9 @@ export interface SharedTooltipContentProps {
     /** Frame look; default `'default'`. */
     variant?: TooltipVariant;
     /**
-     * Leave out series whose value is null (or missing) at the hovered category, as the original charts do, instead of
+     * Leave out series whose value is null (or missing) at the hovered category instead of
      * listing them with `'—'`. When no series has a value the tooltip is not shown. Default `false`.
-     */
+    */
     skipNull?: boolean;
     /** Injected by Recharts. */
     active?: boolean;
@@ -254,7 +254,7 @@ export interface SharedTooltipContentProps {
 }
 
 /**
- * Ready-made shared (category) tooltip in the originals' layout: bold header, then one row per visible series
+ * Ready-made shared (category) tooltip: bold header, then one row per visible series
  * `marker + "Name: value"`, null values as `'—'` (or left out with `skipNull`). Use as `<Tooltip content={<SharedTooltipContent series={...} />} />`
  * or render it directly with `active` and `rows` + `activeIndex` for static display.
  */
@@ -311,9 +311,9 @@ export interface TooltipCrosshairOptions {
 /** Options of {@link tooltipProps}. */
 export interface TooltipPropsOptions {
     /**
-     * Crosshair cursor: `true` (default) draws the originals' 1px dotted line in `theme.crosshair`, `false` hides it,
+     * Crosshair cursor: `true` (default) draws a 1px dotted line in `theme.crosshair`, `false` hides it,
      * and an object overrides its colour, width or dash pattern.
-     */
+    */
     crosshair?: boolean | TooltipCrosshairOptions;
     /** Layout of the chart, for the crosshair direction (default `'horizontal'`, i.e. a vertical line). */
     layout?: 'horizontal' | 'vertical';
@@ -321,7 +321,7 @@ export interface TooltipPropsOptions {
 
 /** Return type of {@link tooltipProps}: a subset of Recharts `TooltipProps`. */
 export interface ChartTooltipBaseProps {
-    /** Always `false` (the originals' tooltips do not animate). */
+    /** Always `false` (tooltips do not animate). */
     isAnimationActive: boolean;
     /** Crosshair cursor element, or `false`. */
     cursor: ReactElement | false;
@@ -339,7 +339,7 @@ export interface ChartTooltipBaseProps {
 }
 
 /**
- * Common `<Tooltip>` props of the originals: no animation, dotted crosshair cursor in `theme.crosshair` (see
+ * Common `<Tooltip>` props: no animation, dotted crosshair cursor in `theme.crosshair` (see
  * `crosshair`), no focus outline, stays inside the chart. Add `content` yourself:
  * `<Tooltip {...tooltipProps(theme)} content={...} />`. Equal inputs return the same object (stable `cursor` element);
  * treat it as read-only.

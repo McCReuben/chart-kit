@@ -8,7 +8,7 @@ import { contentKey, useUniqueId } from './stable';
 /**
  * Legend symbol kinds: `square` (bars/areas), `circle` (scatter/bubble), `line`/`dashed` (lines), `lineMarker`
  * (line with circle marker), `marker` (the hollow point marker alone: a `size` px ring with a 2px series-colour
- * stroke and `markerFill` inside, as the original DualAxisChart's solid splines), `hatch` (hatched bars, e.g.
+ * stroke and `markerFill` inside, as on DualAxisChart's solid splines), `hatch` (hatched bars, e.g.
  * forecasts).
  */
 export type LegendSymbolKind = 'square' | 'circle' | 'line' | 'dashed' | 'lineMarker' | 'marker' | 'hatch';
@@ -33,11 +33,11 @@ export interface LegendSymbolProps {
     kind?: LegendSymbolKind;
     /** Colour. */
     color: string;
-    /** Square/circle size in px (default 10; the original BarChart and DualAxisChart use 12). */
+    /** Square/circle size in px (default 10; BarChart and DualAxisChart use 12). */
     size?: number;
     /** Square corner radius (default 0; BarChart and DualAxisChart use 2). */
     radius?: number;
-    /** Background colour inside a `lineMarker`/`marker` circle (default white, as the original DualAxisChart). */
+    /** Background colour inside a `lineMarker`/`marker` circle (default white). */
     markerFill?: string;
 }
 
@@ -101,18 +101,18 @@ export interface ChartLegendProps {
     items: ReadonlyArray<LegendItem>;
     /** Default click action: toggle the series (wire to `useSeriesVisibility().toggle`). */
     onToggle?: (key: string) => void;
-    /** Click override: when given it is called **instead of** `onToggle` (the original BarChart's `onLegendClick`). */
+    /** Click override: when given it is called **instead of** `onToggle` (e.g. BarChart's `onLegendClick`). */
     onItemClick?: (item: LegendItem) => void;
     /**
      * Hover report: series key on enter (`null` for hidden items), `null` on leave. Wire to
      * `useSeriesHover().setHovered` for dimming.
-     */
+    */
     onItemHover?: (key: string | null) => void;
     /** Square/circle symbol size (default 10; 12 for BarChart/DualAxisChart). */
     symbolSize?: number;
     /** Square symbol radius (default 0; 2 for BarChart/DualAxisChart). */
     symbolRadius?: number;
-    /** Gap in px between a symbol and its label (default 5, the originals' `symbolPadding`). */
+    /** Gap in px between a symbol and its label (default 5). */
     symbolGap?: number;
     /** Theme; default the context theme. */
     theme?: ChartTheme;
@@ -121,7 +121,7 @@ export interface ChartLegendProps {
 }
 
 /**
- * The originals' legend: centred below the chart, horizontal (wrapping), 12px normal-weight `text.primary`, 20px
+ * Chart legend: centred below the chart, horizontal (wrapping), 12px normal-weight `text.primary`, 20px
  * between items, 5px between symbol and label (`symbolGap`). Clicking toggles the series unless `onItemClick` is given; hidden
  * items are drawn in `theme.inactiveLegend`. Items are buttons with `aria-pressed` (pressed = visible).
  */

@@ -12,7 +12,6 @@ export default defineConfig({
             entry: 'src/index.ts',
             formats: ['es'],
             fileName: 'chart-kit',
-            cssFileName: 'chart-kit',
         },
         rollupOptions: {
             external: (id) => PEERS.some((peer) => id === peer || id.startsWith(`${peer}/`)),

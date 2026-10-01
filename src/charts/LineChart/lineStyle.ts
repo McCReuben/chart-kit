@@ -1,6 +1,6 @@
 /**
- * Line dash styles, named as in the originals (`series[].dashStyle`). Each is a dash pattern in multiples of the line
- * width, like the originals, so `'Dash'` on a 2.5px line is `10 7.5`.
+ * Line dash styles (`series[].dashStyle`). Each is a dash pattern in multiples of the line
+ * width, so `'Dash'` on a 2.5px line is `10 7.5`.
  */
 export type LineDashStyle =
     | 'Solid'
@@ -54,9 +54,9 @@ function plainNumber(value: number, group: boolean): string {
 }
 
 /**
- * The originals' default value-axis labels: thousands become `k`, `M`, `G`… when the tick interval is at least that
+ * Default value-axis labels: thousands become `k`, `M`, `G`… when the tick interval is at least that
  * large (`40000` with a 10 000 interval is `40k`), otherwise the plain number. Thousands are separated by a space
- * (plain numbers only from 10 000 up), as in the originals.
+ * (plain numbers only from 10 000 up).
  */
 export function defaultAxisNumber(value: number, tickInterval: number): string {
     for (let i = NUMERIC_SYMBOLS.length - 1; i >= 0; i--) {

@@ -4,7 +4,7 @@ import { alignedScales } from './alignTicks';
 import { seriesKind, seriesSide } from './DualAxisChart';
 
 describe('alignedScales', () => {
-    it('matches the original alignTicks output for revenue + conversion (~190px plot)', () => {
+    it('aligns ticks for revenue + conversion (~190px plot)', () => {
         const [left, right] = alignedScales(
             [
                 { min: 39.4, max: 55.6 },
@@ -37,13 +37,10 @@ describe('alignedScales', () => {
 });
 
 describe('series option normalisation', () => {
-    it('accepts the original numeric axis and seriesType', () => {
-        expect(seriesSide({ name: 'a', data: [], axis: 1 })).toBe('right');
-        expect(seriesSide({ name: 'a', data: [], axis: 0 })).toBe('left');
+    it('defaults to a left-axis spline', () => {
         expect(seriesSide({ name: 'a', data: [], axis: 'right' })).toBe('right');
-        expect(seriesKind({ name: 'a', data: [], seriesType: 'column' })).toBe('column');
-        expect(seriesKind({ name: 'a', data: [], seriesType: 'bar' })).toBe('column');
-        expect(seriesKind({ name: 'a', data: [], type: 'spline', seriesType: 'column' })).toBe('spline');
+        expect(seriesSide({ name: 'a', data: [] })).toBe('left');
+        expect(seriesKind({ name: 'a', data: [], type: 'column' })).toBe('column');
         expect(seriesKind({ name: 'a', data: [] })).toBe('spline');
     });
 });

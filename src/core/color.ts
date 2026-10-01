@@ -15,7 +15,7 @@ export function parseRgb(color: string): [number, number, number] | null {
 }
 
 /**
- * The original charts' `brighten`: adds `amount * 255` to each RGB channel, clamped to 0–255, and returns
+ * Brightens a colour: adds `amount * 255` to each RGB channel, clamped to 0–255, and returns
  * `rgb(r, g, b)`. A negative `amount` darkens (hover states use -0.05 to -0.1). Colours it cannot parse
  * (see {@link parseRgb}) are returned unchanged. Alpha is dropped.
  */

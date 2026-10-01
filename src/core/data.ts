@@ -90,7 +90,7 @@ export interface SeriesExtentOptions {
 
 /**
  * Min and max of the given series keys over the rows (ignoring nulls), or `null` when there is no value.
- * Pass only visible series so hidden ones do not stretch the axis (the originals rescale on hide).
+ * Pass only visible series so hidden ones do not stretch the axis (the axis rescales when a series is hidden).
  */
 export function seriesExtent(
     rows: ReadonlyArray<ChartRow>,

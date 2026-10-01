@@ -3,14 +3,13 @@
 
 Serves storybook-static/ (run `npm run build-storybook` first), reads
 index.json, and captures each story with `globals=theme:light` and
-`globals=theme:dark`. Page errors and console errors/warnings are recorded;
-Highcharts trial/licence messages are listed separately from real errors.
+`globals=theme:dark`. Page errors and console errors/warnings are recorded.
 
 Usage:
     python3 scripts/screenshot.py [--run NAME] [--filter SUBSTR ...] [--width 1100] [--static DIR]
 
 Output: screenshots/<run>/<story-id>--<theme>.png plus report.json.
-Exits 1 if any story has real (non-licence) errors.
+Exits 1 if any story has errors.
 """
 
 import argparse
@@ -29,10 +28,9 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = ROOT / 'storybook-static'
 THEMES = ('light', 'dark')
-LICENCE_RE = re.compile(r'highcharts', re.I)
 # Browser noise that is not caused by the stories themselves.
 IGNORE_RE = re.compile(r'fonts\.(googleapis|gstatic)\.com|favicon\.ico|Download the React DevTools', re.I)
-SETTLE_MS = 1800  # longest original animation is the 1.4 s LineChart sweep
+SETTLE_MS = 1800  # longest animation is the 1.4 s LineChart sweep
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
@@ -77,15 +75,15 @@ def main():
         for story in stories:
             for theme in THEMES:
                 page = browser.new_page(viewport={'width': args.width, 'height': args.height})
-                errors, licence = [], []
+                errors = []
 
-                def on_console(msg, errors=errors, licence=licence):
+                def on_console(msg, errors=errors):
                     if msg.type not in ('error', 'warning'):
                         return
                     text = f'{msg.type}: {msg.text}'
                     if IGNORE_RE.search(text):
                         return
-                    (licence if LICENCE_RE.search(text) else errors).append(text)
+                    errors.append(text)
 
                 page.on('console', on_console)
                 page.on('pageerror', lambda exc, errors=errors: errors.append(f'pageerror: {exc}'))
@@ -101,20 +99,16 @@ def main():
                 shot = out / f'{story}--{theme}.png'
                 page.screenshot(path=str(shot), full_page=True)
                 page.close()
-                report.append({'story': story, 'theme': theme, 'file': shot.name, 'errors': errors, 'licence': licence})
-                flag = 'ERR' if errors else ('lic' if licence else 'ok ')
+                report.append({'story': story, 'theme': theme, 'file': shot.name, 'errors': errors})
+                flag = 'ERR' if errors else 'ok '
                 print(f'[{flag}] {story} ({theme})')
         browser.close()
     httpd.shutdown()
 
     (out / 'report.json').write_text(json.dumps(report, indent=2))
     bad = [r for r in report if r['errors']]
-    lic = sorted({m for r in report for m in r['licence']})
     print(f'\n{len(report)} screenshots -> {out.relative_to(ROOT)}')
-    print(f'Highcharts messages (trial/licence/advisory) ({len(lic)} distinct):')
-    for m in lic:
-        print(f'  {m[:200]}')
-    print(f'Stories with real errors: {len(bad)}')
+    print(f'Stories with errors: {len(bad)}')
     for r in bad:
         print(f"  {r['story']} ({r['theme']}):")
         for e in r['errors']:

@@ -20,8 +20,7 @@ function isMissing(value: unknown): value is null | undefined {
  * - `'2025 W5'` → `'2025 RW05'` (the embedded year wins)
  * - `5` or `'05'` → `'2026 RW05'` only when a `year` is given
  *
- * One deliberate difference from the original helper: there `Number(null) === 0` counted as a year, so a call
- * without a year gave `'0 RW05'`. Here a `null`/`''` year means "no year" (`'RW05'`, and bare numbers stay as-is).
+ * A `null`/`''` year means "no year" (`'RW05'`, and bare numbers stay as-is).
  */
 export function formatRetailWeek(value: unknown, year: number | string | null = null): string {
     const text = String(value ?? '').trim();
@@ -174,7 +173,7 @@ export function percentFormatter(opts: PercentFormatOptions = {}): ValueFormatte
 
 /**
  * Default tooltip value formatting used by the charts: `'—'` for missing values, otherwise `String(value)`
- * (the originals print the raw number).
+ * (the raw number).
  */
 export function defaultValueFormatter(value: number | null | undefined): string {
     return isMissing(value) ? EMPTY_VALUE : String(value);

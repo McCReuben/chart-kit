@@ -40,13 +40,13 @@ describe('data helpers', () => {
 });
 
 describe('niceScale', () => {
-    it('normalises intervals like Highcharts', () => {
+    it('normalises intervals to 1/2/2.5/5 × 10^n', () => {
         expect(normalizeTickInterval(6.14)).toBe(5);
         expect(normalizeTickInterval(0.3)).toBe(0.25);
         expect(normalizeTickInterval(1400)).toBe(1000);
         expect(normalizeTickInterval(1600)).toBe(2000);
     });
-    it('matches the original LineChart axis (35..60 step 5)', () => {
+    it('gives 35..60 step 5 for revenue data on a short axis', () => {
         const s = niceScale(39.4, 55.6, { pixelLength: 190 });
         expect(s.ticks).toEqual([35, 40, 45, 50, 55, 60]);
         expect(s.domain).toEqual([35, 60]);

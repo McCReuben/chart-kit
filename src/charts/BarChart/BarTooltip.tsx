@@ -12,7 +12,7 @@ export interface BarTooltipPoint<S extends SeriesInput = SeriesInput> {
     name: string;
     /** Resolved series colour. */
     color: string;
-    /** Value (never `null`: null points are left out, as in the original). */
+    /** Value (never `null`: null points are left out). */
     value: number;
     /** Value after `tooltipValueFormatter`. */
     formattedValue: string;
@@ -24,7 +24,7 @@ export interface BarTooltipPoint<S extends SeriesInput = SeriesInput> {
 
 /** What `renderTooltip` receives (the replacement for the `this` of `tooltipHtmlFormatter`). */
 export interface BarTooltipContext<S extends SeriesInput = SeriesInput> {
-    /** Raw category value (original `this.x` / `this.key`). */
+    /** Raw category value. */
     category: string | number;
     /** Category index. */
     index: number;
@@ -34,7 +34,7 @@ export interface BarTooltipContext<S extends SeriesInput = SeriesInput> {
     points: ReadonlyArray<BarTooltipPoint<S>>;
     /** Whether the tooltip is shared. */
     shared: boolean;
-    /** Stacked mode: sum of the visible positive values (original `this.total`); otherwise `undefined`. */
+    /** Stacked mode: sum of the visible positive values; otherwise `undefined`. */
     total?: number;
 }
 
@@ -63,7 +63,7 @@ interface BarTooltipContentProps<S extends SeriesInput> {
 }
 
 /**
- * Tooltip content that places itself like the original's `tooltipAwayFromCursor` positioner. Render it through
+ * Tooltip content that places itself beside the bars, away from the cursor (see `tooltipAwayFromCursor`). Render it through
  * `<Tooltip position={{ x: 0, y: 0 }} content={<BarTooltipContent … />} />`: the Recharts wrapper stays at the plot
  * origin and this component translates itself, using the chart's scales for the anchor and its own measured size.
  */
@@ -124,7 +124,7 @@ export function BarTooltipContent<S extends SeriesInput>({
 
     if (!show || !row) return null;
 
-    // Anchor as the original computes it: along the category axis the category centre (shared) or the hovered bar's
+    // Anchor: along the category axis the category centre (shared) or the hovered bar's
     // centre (not shared); along the value axis the mean end of the shown bars (stack segment tops when stacked).
     const catScale = horizontal ? yScale : xScale;
     const valScale = horizontal ? xScale : yScale;
@@ -169,10 +169,10 @@ export function BarTooltipContent<S extends SeriesInput>({
             }}
         >
             {renderTooltip ? (
-                // The original's HTML formatter output sat in a tooltip label with `padding: 10`.
+                // Custom bodies bring their own inner spacing, so the frame pads less.
                 <TooltipFrame style={{ padding: 10 }}>{renderTooltip(context)}</TooltipFrame>
             ) : (
-                // Original: label padding 10 + the formatter's own `padding: 4px 6px`.
+                // Frame padding (10) plus row padding (4px 6px).
                 <TooltipFrame style={{ padding: '14px 16px' }}>
                     <TooltipTitle>{header}</TooltipTitle>
                     {points.map((p) => (

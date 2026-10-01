@@ -14,13 +14,13 @@ export interface NiceScale {
 
 /** Options of {@link niceScale}. */
 export interface NiceScaleOptions {
-    /** Axis length in px. With it, the tick count follows the originals' `tickPixelInterval` (72px for y axes). */
+    /** Axis length in px. With it, the tick count follows `tickPixelInterval` (72px). */
     pixelLength?: number;
-    /** Target pixels between ticks when `pixelLength` is set (default 72, the original y-axis default). */
+    /** Target pixels between ticks when `pixelLength` is set (default 72). */
     tickPixelInterval?: number;
     /** Approximate number of ticks when `pixelLength` is unknown (default 5). */
     tickCount?: number;
-    /** Extend the range to include 0 (bars/columns: the originals' threshold). */
+    /** Extend the range to include 0 (bars and columns start at 0). */
     includeZero?: boolean;
     /** Only integer ticks (default `false`). */
     integersOnly?: boolean;
@@ -59,8 +59,8 @@ const CACHE_LIMIT = 256;
 const cache = new Map<string, NiceScale>();
 
 /**
- * original-style "nice" linear scale: ticks at 1/2/2.5/5 × 10^n, and the axis starts and ends on a tick
- * (`startOnTick`/`endOnTick`). E.g. data 39.4–55.6 on a ~190px axis gives 35, 40, ... 60, as in the originals.
+ * "Nice" linear scale: ticks at 1/2/2.5/5 × 10^n, and the axis starts and ends on a tick
+ * (`startOnTick`/`endOnTick`). E.g. data 39.4–55.6 on a ~190px axis gives 35, 40, ... 60.
  * Pass the result's `domain` and `ticks` to a value axis (see `valueAxisProps`). Results are cached: equal inputs
  * return the same (frozen) object, so it is safe to call during render.
  */

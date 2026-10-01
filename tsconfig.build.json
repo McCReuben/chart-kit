@@ -8,5 +8,5 @@
         "rootDir": "src"
     },
     "include": ["src"],
-    "exclude": ["src/originals", "src/**/*.stories.*", "src/**/*.mdx", "src/charts/fixtures.*", "node_modules", "dist"]
+    "exclude": ["src/**/*.stories.*", "src/**/*.mdx", "src/charts/fixtures.*", "node_modules", "dist"]
 }

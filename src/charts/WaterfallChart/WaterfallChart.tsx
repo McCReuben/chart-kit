@@ -87,7 +87,7 @@ export interface WaterfallChartProps {
     /**
      * Custom tooltip content for the hovered bar (was the `TooltipContent` component). Return a full tooltip, for
      * example built from `TooltipFrame`/`TooltipTitle`/`TooltipRow`. Giving it turns the tooltip on.
-     */
+    */
     renderTooltip?: (row: WaterfallRow, index: number) => ReactNode;
     /** Show the built-in tooltip (row name and signed value) when `renderTooltip` is not given. Default false. */
     showDefaultTooltip?: boolean;
@@ -197,8 +197,8 @@ export function WaterfallChart({
         return { domain: d, ticks: s.ticks.filter((t) => t >= d[0] - 1e-9 && t <= d[1] + 1e-9) };
     }, [rows, stableYDomain, height, marginTop, marginBottom]);
 
-    // The original draws bar labels and the main x-tick lines at 12px and sub-labels at 10px. There is no 12px axis
-    // token, so the 12px legend size stands in for it. Labels use `text.secondary` (as the original), which stays
+    // Bar labels and the main x-tick lines are 12px and sub-labels at 10px. There is no 12px axis
+    // token, so the 12px legend size stands in for it. Labels use `text.secondary`, which stays
     // readable on the dark background where `axisLabel` is too dim.
     const labelSize = theme.fontSize.legend;
     const subLabelSize = theme.fontSize.dataLabel;

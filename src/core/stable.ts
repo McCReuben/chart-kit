@@ -18,7 +18,7 @@ export function contentKey(value: unknown): string {
  * Returns the previous reference while `value` is deep-equal by content (JSON-serialisable data such as `series`,
  * `categories` or theme overrides). A caller that rebuilds equal arrays inline on every render therefore gets a
  * stable reference, so memoised rows are not rebuilt and Recharts does not re-animate.
- * Modelled on the original LineChart's `contentKey`. Functions inside `value` are ignored by the comparison.
+ * Functions inside `value` are ignored by the comparison.
  */
 export function useContentStable<T>(value: T): T {
     const ref = useRef<{ key: string; value: T } | null>(null);
