@@ -1,18 +1,9 @@
-import { useEffect } from 'react';
+import { ChartThemeProvider, useChartTheme } from '../src/theme';
 
-import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
-
-// ThemeProvider owns its dark-mode state (seeded from the OS preference), so the
-// toolbar toggle drives it through toggleTheme rather than a prop.
-function ThemeSync({ mode, children }) {
-    const { isDarkMode, toggleTheme, colors } = useTheme();
-    const wantDark = mode === 'dark';
-
-    useEffect(() => {
-        if (isDarkMode !== wantDark) toggleTheme();
-    }, [isDarkMode, wantDark, toggleTheme]);
-
-    return <div style={{ background: colors.background, padding: 24, minHeight: '100%' }}>{children}</div>;
+// Page background from the active chart theme, so stories sit on the right surface in both modes.
+function Backdrop({ children }) {
+    const theme = useChartTheme();
+    return <div style={{ background: theme.background, padding: 24, minHeight: '100%' }}>{children}</div>;
 }
 
 /** @type {import('@storybook/react-vite').Preview} */
@@ -38,11 +29,11 @@ const preview = {
     },
     decorators: [
         (Story, context) => (
-            <ThemeProvider>
-                <ThemeSync mode={context.globals.theme}>
+            <ChartThemeProvider mode={context.globals.theme === 'dark' ? 'dark' : 'light'}>
+                <Backdrop>
                     <Story />
-                </ThemeSync>
-            </ThemeProvider>
+                </Backdrop>
+            </ChartThemeProvider>
         ),
     ],
 };
